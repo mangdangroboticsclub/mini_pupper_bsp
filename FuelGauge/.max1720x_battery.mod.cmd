@@ -1,0 +1,1 @@
+cmd_/home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.mod := { echo  /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.o;  echo; } > /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.mod

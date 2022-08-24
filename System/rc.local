@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# 1.Initialize power switch and pwm units
+# 2.start lcd
+#
+# Copyright (c) 2020, Mangdang Technology Co., Limited
+#
+#
+
+#remove bluebooth cache
+sudo rm /var/lib/bluetooth/* -rf
+sleep 2
+
+#export pwm channel
+for i in $(seq 0 15)
+do
+	sudo echo $i > /sys/class/pwm/pwmchip0/export
+	sudo echo  4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
+	sudo chmod  777  /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
+done
+
+# init the Bluetooth
+sudo hciattach /dev/ttyAMA0 bcm43xx 115200 noflow -
+sleep 8
+sudo hciattach /dev/ttyAMA0 bcm43xx 115200 noflow -
+sleep 2
+
+#init lcd
+#python3 /home/ubuntu/minipupper_ros_bsp/mangdang/LCD/lcd_init.py
+
+

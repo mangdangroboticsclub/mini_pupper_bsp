@@ -1,0 +1,1 @@
+cmd_/home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.ko := ld -r -EL  -maarch64elf --build-id=sha1  -T scripts/module.lds -o /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.ko /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.o /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.mod.o;  true
