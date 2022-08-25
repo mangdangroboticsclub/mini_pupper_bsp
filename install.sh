@@ -5,11 +5,6 @@ set -e
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <ssid> <wifi password>"
-    exit 1
-fi
-
 
 ############################################
 # wait until unattended-upgrade has finished
