@@ -56,7 +56,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 	
 - Install this repository 
 
-	$git clone https://github.com/hdumcke/minipupper_base.git
+	$git clone https://github.com/mangdangroboticsclub/minipupper-bsp.git
 	
 	$./minipupper_base/install.sh
 	
