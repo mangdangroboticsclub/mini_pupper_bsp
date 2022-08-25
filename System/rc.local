@@ -51,4 +51,4 @@ sudo chmod 666 /dev/gpiomem
 echo performance > /sys/bus/cpu/devices/cpu0/cpufreq/scaling_governor
 
 # install script will replace BASEDIR
-gsp-play-1.0 BASEDIR/Audio/power_on.mp3 &
+mpg123 BASEDIR/Audio/power_on.mp3 &

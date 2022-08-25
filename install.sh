@@ -10,11 +10,6 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-### Prevent starting unattended-upgrade during script execution
-for TARGET_FILE in $(grep -ril "Update-Package-Lists" /etc/apt/apt.conf.d/); do
-    echo Rewriting $TARGET_FILE
-    sudo sed -i -e 's/Update-Package-Lists "1"/Update-Package-Lists "0"/g' -e 's/Unattended-Upgrade "1"/Unattended-Upgrade "0"/g' $TARGET_FILE
-done
 
 ############################################
 # wait until unattended-upgrade has finished
@@ -31,18 +26,6 @@ done
 echo "minipupper" | sudo tee /etc/hostname
 echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
 
-### Setup wireless networking ( must change SSID and password )
-if ! grep -q "wifis:" /etc/netplan/50-cloud-init.yaml; then
-    sudo sed -i "/version: 2/d" /etc/netplan/50-cloud-init.yaml
-    echo "    wifis:" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "        wlan0:" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "            access-points:" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "                $1:" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "                    password: \"$2\"" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "            dhcp4: true" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "            optional: true" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-    echo "    version: 2" | sudo tee -a /etc/netplan/50-cloud-init.yaml
-fi
 
 ### upgrade Ubuntu and install required packages
 echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections

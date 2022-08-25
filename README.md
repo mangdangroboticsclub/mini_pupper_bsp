@@ -42,7 +42,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 - No root priviledges required to drive any robot API
 - calibrate is a system command
 
-## Installation
+## Prepare installation
 
 - Flash Ubuntu 22.04 64bit to SD card. 
 
@@ -54,20 +54,24 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 	
 	Directly operate by mouse/keyboard/display
 	
-- Install this repository 
+## Install this repository 
 
-	$git clone https://github.com/hdumcke/minipupper_base.git
+	$mkdir QuadrupedRobot	
+	$cd QuadrupedRobot	
+	$git clone https://github.com/mangdangroboticsclub/minipupper-bsp.git
+	$cd minipupper-bsp
+	$chmod 777 ./install.sh ./IO_Configuration/install.sh ./FuelGauge/install.sh ./System/install.sh ./EEPROM/install.sh	
+	$./install.sh	
+	$sudo reboot	
 	
-	$./minipupper_base/install.sh
+	$cd QuadrupedRobot/minipupper-bsp
+	$chmod 777 ./update_kernel_modules.sh
+	$./update_kernel_modules.sh	
+	$sudo reboot
 	
-	$reboot	
-	
-	$./minipupper_base/update_kernel_modules.sh
-	
-	$reboot	
-	
-	$./minipupper_base/test.sh
-
+	$cd QuadrupedRobot/minipupper-bsp
+	$chmod 777 ./test.sh
+	$./test.sh
 
 ## Calibration
 

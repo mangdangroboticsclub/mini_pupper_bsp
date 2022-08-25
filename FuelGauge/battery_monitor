@@ -12,7 +12,7 @@ do
 		echo 0 > /sys/class/gpio/gpio25/value
 		echo 0 > /sys/class/gpio/gpio21/value
 		# install scrip will replace BASEDIR
-		gsp-play-1.0 BASEDIR/Audio/low_power.mp3
+		mpg123 BASEDIR/Audio/low_power.mp3
 	fi
 	sleep 8
 done
