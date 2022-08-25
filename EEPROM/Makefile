@@ -1,8 +1,8 @@
 #
-# The makefile for max17205 driver build
+# The makefile for eeprom driver build
 #
 
-obj-m += max1720x_battery.o
+obj-m += at24.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
@@ -11,5 +11,5 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 install:
-	sudo cp max1720x_battery.ko /lib/modules/`uname -r`/kernel/drivers/power/supply/
+	sudo cp at24.ko  /lib/modules/`uname -r`/kernel/drivers/nvmem/
 	sudo depmod -a

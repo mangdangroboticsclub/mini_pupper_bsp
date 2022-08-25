@@ -1,1 +1,0 @@
-cmd_/home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/modules.order := {   echo /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/max1720x_battery.ko; :; } | awk '!x[$$0]++' - > /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/modules.order

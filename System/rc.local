@@ -1,31 +1,54 @@
 #!/bin/bash
 #
-# 1.Initialize power switch and pwm units
-# 2.start lcd
+# 1.Initialize PWM channels
 #
-# Copyright (c) 2020, Mangdang Technology Co., Limited
+# Copyright (c) 2020, MangDang Technology Co., Limited
 #
 #
 
-#remove bluebooth cache
-sudo rm /var/lib/bluetooth/* -rf
-sleep 2
+IO_MAP=(
+25 1  #servo 1
+21 1  #servo 2
+)
 
-#export pwm channel
+function io_init(){
+	len=${#IO_MAP[@]}
+	for((i=0;i<len;i+=2))
+	do
+		io=${IO_MAP[i]}
+		val=${IO_MAP[i+1]}
+		echo $io > /sys/class/gpio/export
+		echo out > /sys/class/gpio/gpio$io/direction
+		echo $val > /sys/class/gpio/gpio$io/value
+	done
+}
+
+#init IO
+io_init
+sleep 1
+
+# export pwm channel
 for i in $(seq 0 15)
 do
-	sudo echo $i > /sys/class/pwm/pwmchip0/export
-	sudo echo  4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
-	sudo chmod  777  /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
+	echo $i > /sys/class/pwm/pwmchip0/export
+	echo  4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
+	chmod 666 /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
 done
 
-# init the Bluetooth
-sudo hciattach /dev/ttyAMA0 bcm43xx 115200 noflow -
-sleep 8
-sudo hciattach /dev/ttyAMA0 bcm43xx 115200 noflow -
-sleep 2
+# Make nvmem user r/w
+until [ -f /sys/bus/nvmem/devices/3-00500/nvmem ]
+do
+     sleep 1
+done
+chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem
 
-#init lcd
-#python3 /home/ubuntu/minipupper_ros_bsp/mangdang/LCD/lcd_init.py
+# Allow user to drive LCD
+sudo chmod 666 /dev/spidev0.0
+sudo chmod 666 /dev/mem
+sudo chmod 666 /dev/gpiomem
 
+# set cpu performance
+echo performance > /sys/bus/cpu/devices/cpu0/cpufreq/scaling_governor
 
+# install script will replace BASEDIR
+gsp-play-1.0 BASEDIR/Audio/power_on.mp3 &

@@ -1,51 +1,18 @@
 #!/bin/bash
 
 #
-# Copyright (c) 2021, Mangdang Technology Co., Limited
+# Copyright (c) 2021, MangDang Technology Co., Limited
 #
-
-
-IO_MAP=(
-25 1  #servo 1
-21 1  #servo 2
-26 1  #lcd led
-24 0  #lcd rst
-27 0  #lcd dc
-)
-
-function io_init(){
-	len=${#IO_MAP[@]}
-	for((i=0;i<len;i+=2))
-	do
-		io=${IO_MAP[i]}
-		val=${IO_MAP[i+1]}
-		echo $io > /sys/class/gpio/export
-		echo out > /sys/class/gpio/gpio$io/direction
-		echo $val > /sys/class/gpio/gpio$io/value
-	done
-}
-
-# init IO
-io_init
-sleep 1
-
-chmod 777 /sys/class/gpio/gpio24/value
-chmod 777 /sys/class/gpio/gpio27/value
-chmod 777 /dev/spidev0.0
-
 
 #Power monitor
 while true
 do
 	current_voltage=`cat /sys/class/power_supply/max1720x_battery/voltage_now`
-	if [ $current_voltage -le 6400 ]; then
-		echo 1 > /sys/class/gpio/gpio16/value
-		echo 1 > /sys/class/gpio/gpio20/value
-		echo 0 > /sys/class/gpio/gpio13/value
-	else
-		echo 0 > /sys/class/gpio/gpio16/value
-		echo 0 > /sys/class/gpio/gpio20/value
-		echo 1 > /sys/class/gpio/gpio13/value
+	if [ $current_voltage -le 6500 ]; then
+		echo 0 > /sys/class/gpio/gpio25/value
+		echo 0 > /sys/class/gpio/gpio21/value
+		# install scrip will replace BASEDIR
+		gsp-play-1.0 BASEDIR/Audio/low_power.mp3
 	fi
 	sleep 8
 done

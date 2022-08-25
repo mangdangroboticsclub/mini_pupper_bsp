@@ -24,4 +24,4 @@ GuessMainPID=no
 
 [Install]
 WantedBy=multi-user.target
-Alias=rc-local.service
+Alias=rc.local.service

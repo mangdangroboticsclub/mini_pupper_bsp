@@ -1,1 +1,0 @@
-cmd_/home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/Module.symvers := sed 's/\.ko$$/\.o/' /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/modules.order | scripts/mod/modpost -m -a  -o /home/ubuntu/QuadrupedRobot/minipupper-bsp/FuelGauge/Module.symvers -e -i Module.symvers   -T -
