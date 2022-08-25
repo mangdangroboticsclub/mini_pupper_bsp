@@ -54,6 +54,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 	
 	Directly operate by mouse/keyboard/display
 	
+
 ## Install this repository 
 
 	$mkdir QuadrupedRobot	
@@ -62,7 +63,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 	$cd minipupper-bsp
 	$chmod 777 ./install.sh ./IO_Configuration/install.sh ./FuelGauge/install.sh ./System/install.sh ./EEPROM/install.sh	
 	$./install.sh	
-	$sudo reboot	
+	$sudo reboot
 	
 	$cd QuadrupedRobot/minipupper-bsp
 	$chmod 777 ./update_kernel_modules.sh
