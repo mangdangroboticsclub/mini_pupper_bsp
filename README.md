@@ -37,14 +37,14 @@ Many thanks for hdumcke and Tiryoh's great support for this repository.
 Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 - contains only the code required to get the hardware API installed
-- installs on a clean Unutu 22.04 Desktop(Raspberry Pi)
+- installs on a clean Ubuntu 22.04 Desktop or Server for Raspberry Pi
 - Python code is installed as a Python module
 - no root priviledges required to drive any robot API
 - make "calibrate" a system command
 
 ## Prepare installation
 
-- Flash Ubuntu 22.04 64bit to SD card. 
+- Flash Ubuntu 22.04 to SD card. 
 
 	Download ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img from the link, https://ubuntu.com/download/raspberry-pi .
 	
@@ -104,4 +104,4 @@ Most source code are licensed under MIT, but NOT include the below modules.
 
 ### Some of the below code comes from internet, will make it clear in the futue.
 
-* [LCD](./Python_Modules/MangDang/LCD)
+* [LCD](./Python_Module/MangDang/LCD)
