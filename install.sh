@@ -18,8 +18,8 @@ tmp=$(ps aux | grep unattended-upgrade | grep -v unattended-upgrade-shutdown | g
 done
 
 ### Give a meaningfull hostname
-echo "minipupper" | sudo tee /etc/hostname
-echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
+grep -q "minipupper" /etc/hostname || echo "minipupper" | sudo tee /etc/hostname
+grep -q "minipupper" /etc/hosts || echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
 
 
 ### upgrade Ubuntu and install required packages
@@ -59,21 +59,50 @@ sudo pip install $BASEDIR/Python_Modules
 
 ### Make pwm sysfs and nvmem work for non-root users
 ### reference: https://github.com/raspberrypi/linux/issues/1983
+### reference: https://github.com/bitula/minipupper-dev/blob/main/scripts/minipupper.sh
 getent group gpio || sudo groupadd gpio && sudo gpasswd -a $(whoami) gpio
 getent group dialout || sudo groupadd dialout && sudo gpasswd -a $(whoami) dialout
 sudo tee /etc/udev/rules.d/99-minipupper-pwm.rules << EOF > /dev/null
-SUBSYSTEM=="pwm*", PROGRAM="/bin/sh -c '\
-        chown -R root:gpio /sys/class/pwm && chmod -R 770 /sys/class/pwm;\
-        chown -R root:gpio /sys/class/pwm/pwmchip0/pwm*/duty_cycle && chmod -R 770 /sys/class/pwm/pwmchip0/pwm*/duty_cycle'"
+KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-minipupper.sh"
+EOF
+sudo tee /etc/udev/rules.d/99-minipupper-gpio.rules << EOF > /dev/null
+KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-minipupper.sh"
+EOF
+sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
+KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
+KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
 EOF
 
-if [ $(lsb_release -cs) == "jammy" ]; then
-sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
-SUBSYSTEM=="nvmem", DEVPATH=="*0-00501", RUN+="/bin/chown root:gpio /sys$env{DEVPATH}/nvmem", RUN+="/bin/chmod 660 /sys$env{DEVPATH}/nvmem"
+sudo tee /usr/lib/udev/pwm-minipupper.sh << "EOF" > /dev/null
+#!/bin/bash
+for i in $(seq 0 15); do
+    echo $i > /sys/class/pwm/pwmchip0/export
+    echo 4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
+    chmod 666 /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
+    chmod 666 /sys/class/pwm/pwmchip0/pwm$i/enable
+done
 EOF
-else
-sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
-SUBSYSTEM=="nvmem", DEVPATH=="*0-00500", RUN+="/bin/chown root:gpio /sys$env{DEVPATH}/nvmem", RUN+="/bin/chmod 660 /sys$env{DEVPATH}/nvmem"
+sudo chmod +x /usr/lib/udev/pwm-minipupper.sh
+
+sudo tee /usr/lib/udev/gpio-minipupper.sh << EOF > /dev/null
+#!/bin/bash
+# Board power
+echo 21 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio21/direction
+chmod 666 /sys/class/gpio/gpio21/value
+echo 1 > /sys/class/gpio/gpio21/value
+
+echo 25 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio25/direction
+chmod 666 /sys/class/gpio/gpio25/value
+echo 1 > /sys/class/gpio/gpio25/value
+
+# LCD power
+echo 26 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio26/direction
+chmod 666 /sys/class/gpio/gpio26/value
+echo 1 > /sys/class/gpio/gpio26/value
 EOF
-fi
+sudo chmod +x /usr/lib/udev/gpio-minipupper.sh
+
 sudo udevadm control --reload-rules && sudo udevadm trigger
