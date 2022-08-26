@@ -32,15 +32,8 @@ for i in $(seq 0 15)
 do
 	echo $i > /sys/class/pwm/pwmchip0/export
 	echo  4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
-	chmod 666 /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
 done
 
-# Make nvmem user r/w
-until [ -f /sys/bus/nvmem/devices/3-00500/nvmem ]
-do
-     sleep 1
-done
-chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem
 
 # Allow user to drive LCD
 sudo chmod 666 /dev/spidev0.0
