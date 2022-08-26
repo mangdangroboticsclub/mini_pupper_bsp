@@ -89,4 +89,4 @@ Most source code are licensed under MIT, but NOT include the below modules.
 [FuelGauge](FuelGauge)
 
 ### Some of the below code comes from internet, will make it clear in the futue.
-[LCD](Python_Modules/MangDang/LCD)
+[LCD](Python_Module/MangDang/LCD)
