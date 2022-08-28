@@ -17,7 +17,7 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 - minipupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
 - minipupper-ros repository: ROS(Robot Operating System) packages 
 	minipupper-ros1:default ROS branch
-	minipupper-ros2:ROS2 branch
+	minipupper-ros2:ROS 2 branch
 
 In other words, there are 2 software versions, that is,
 
@@ -28,7 +28,7 @@ You can enjoy Mini Pupper using [the pre-built image files](https://drive.google
 
 ## About minipupper-bsp
 
-[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also released the [minipupper-bsp reference repo](https://github.com/hdumcke/minipupper_base) under the MIT License. Our minipupper-bsp repository is derived from his repository.
+[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also created the [minipupper-bsp reference repo](https://github.com/hdumcke/minipupper_base) and released under the MIT License. Our minipupper-bsp repository is derived from his repository.
 
 [Tiryoh](https://github.com/Tiryoh) is also the contributor to hdumcke's repo and Mini Pupper project. He spent much time to double confirm and co-work together to build this repo.  
 
@@ -93,7 +93,7 @@ $ calibrate
 
 ## License
 
-Copyright (c) 2020-2022, MangDang Technology Co., Limited
+Copyright (c) 2020-2022 MangDang Technology Co., Limited
 
 Most source code are licensed under MIT, but NOT include the below modules.
 
