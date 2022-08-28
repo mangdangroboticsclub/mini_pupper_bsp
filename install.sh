@@ -5,11 +5,6 @@ set -e
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <ssid> <wifi password>"
-    exit 1
-fi
-
 
 ############################################
 # wait until unattended-upgrade has finished
@@ -23,8 +18,8 @@ tmp=$(ps aux | grep unattended-upgrade | grep -v unattended-upgrade-shutdown | g
 done
 
 ### Give a meaningfull hostname
-echo "minipupper" | sudo tee /etc/hostname
-echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
+grep -q "minipupper" /etc/hostname || echo "minipupper" | sudo tee /etc/hostname
+grep -q "minipupper" /etc/hosts || echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
 
 
 ### upgrade Ubuntu and install required packages
@@ -32,7 +27,7 @@ echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selecti
 sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 sudo apt update
 sudo apt -y upgrade
-sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg321 python3-tk
+sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg321 python3-tk openssh-server
 sudo sed -i "s/pulse/alsa/" /etc/libao.conf
 if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
@@ -61,3 +56,53 @@ if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/calibrate_servos.py
 fi
 sudo pip install $BASEDIR/Python_Module
+
+### Make pwm sysfs and nvmem work for non-root users
+### reference: https://github.com/raspberrypi/linux/issues/1983
+### reference: https://github.com/bitula/minipupper-dev/blob/main/scripts/minipupper.sh
+getent group gpio || sudo groupadd gpio && sudo gpasswd -a $(whoami) gpio
+getent group dialout || sudo groupadd dialout && sudo gpasswd -a $(whoami) dialout
+sudo tee /etc/udev/rules.d/99-minipupper-pwm.rules << EOF > /dev/null
+KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-minipupper.sh"
+EOF
+sudo tee /etc/udev/rules.d/99-minipupper-gpio.rules << EOF > /dev/null
+KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-minipupper.sh"
+EOF
+sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
+KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
+KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
+EOF
+
+sudo tee /usr/lib/udev/pwm-minipupper.sh << "EOF" > /dev/null
+#!/bin/bash
+for i in $(seq 0 15); do
+    echo $i > /sys/class/pwm/pwmchip0/export
+    echo 4000000 > /sys/class/pwm/pwmchip0/pwm$i/period
+    chmod 666 /sys/class/pwm/pwmchip0/pwm$i/duty_cycle
+    chmod 666 /sys/class/pwm/pwmchip0/pwm$i/enable
+done
+EOF
+sudo chmod +x /usr/lib/udev/pwm-minipupper.sh
+
+sudo tee /usr/lib/udev/gpio-minipupper.sh << EOF > /dev/null
+#!/bin/bash
+# Board power
+echo 21 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio21/direction
+chmod 666 /sys/class/gpio/gpio21/value
+echo 1 > /sys/class/gpio/gpio21/value
+
+echo 25 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio25/direction
+chmod 666 /sys/class/gpio/gpio25/value
+echo 1 > /sys/class/gpio/gpio25/value
+
+# LCD power
+echo 26 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio26/direction
+chmod 666 /sys/class/gpio/gpio26/value
+echo 1 > /sys/class/gpio/gpio26/value
+EOF
+sudo chmod +x /usr/lib/udev/gpio-minipupper.sh
+
+sudo udevadm control --reload-rules && sudo udevadm trigger

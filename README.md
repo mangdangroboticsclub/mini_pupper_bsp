@@ -2,7 +2,7 @@
 
 This repository is the BSP(board support package) for MiniPupper.
 
-Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [Youtube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
+Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [YouTube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
 
 Mini Pupper will make robotics easier for schools, homeschool families, enthusiasts and beyond.
 
@@ -17,7 +17,7 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 - minipupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
 - minipupper-ros repository: ROS(Robot Operating System) packages 
 	minipupper-ros1:default ROS branch
-	minipupper-ros2:ROS2 branch
+	minipupper-ros2:ROS 2 branch
 
 In other words, there are 2 software versions, that is,
 
@@ -28,9 +28,9 @@ You can enjoy Mini Pupper using [the pre-built image files](https://drive.google
 
 ## About minipupper-bsp
 
-[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also created a [minipupper-bsp reference repo](https://github.com/hdumcke/minipupper_base), [Tiryoh](https://github.com/Tiryoh) is also the contributor to hdumcke's repo and Mini Pupper project.
+[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also created the [minipupper-bsp reference repo](https://github.com/hdumcke/minipupper_base) and released under the MIT License. Our minipupper-bsp repository is derived from his repository.
 
-Tiryoh spent much time to double confirm and co-work together to build this repo.  
+[Tiryoh](https://github.com/Tiryoh) is also the contributor to hdumcke's repo and Mini Pupper project. He spent much time to double confirm and co-work together to build this repo.  
 
 Many thanks for hdumcke and Tiryoh's great support for this repository. 
 
@@ -39,8 +39,8 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 - contains only the code required to get the hardware API installed
 - installs on a clean Ubuntu 22.04 Desktop or Server for Raspberry Pi
 - Python code is installed as a Python module
-- No root priviledges required to drive any robot API
-- calibrate is a system command
+- no root priviledges required to drive any robot API
+- make "calibrate" a system command
 
 ## Prepare installation
 
@@ -57,36 +57,51 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 ## Install this repository 
 
-	$mkdir QuadrupedRobot	
-	$cd QuadrupedRobot	
-	$git clone https://github.com/mangdangroboticsclub/minipupper-bsp.git
-	$cd minipupper-bsp
-	$chmod 777 ./install.sh ./IO_Configuration/install.sh ./FuelGauge/install.sh ./System/install.sh ./EEPROM/install.sh	
-	$./install.sh	
-	$sudo reboot
-	
-	$cd QuadrupedRobot/minipupper-bsp
-	$chmod 777 ./update_kernel_modules.sh
-	$./update_kernel_modules.sh	
-	$sudo reboot
-	
-	$cd QuadrupedRobot/minipupper-bsp
-	$chmod 777 ./test.sh
-	$./test.sh
+1st boot
+
+```
+$ sudo apt install -y git
+$ mkdir QuadrupedRobot
+$ cd QuadrupedRobot
+$ git clone https://github.com/mangdangroboticsclub/minipupper-bsp.git
+$ cd minipupper-bsp
+$ ./install.sh	
+$ sudo reboot
+```
+
+2nd boot
+
+```
+$ cd QuadrupedRobot/minipupper-bsp
+$ ./update_kernel_modules.sh	
+$ sudo reboot
+```
+
+3rd boot
+
+```
+$ cd QuadrupedRobot/minipupper-bsp
+$ ./test.sh
+```
 
 ## Calibration
 
-	# this is a command
-	$calibrate 
+```
+# this is a command
+$ calibrate 
+```
 
+## License
 
-## Licensing Issue
+Copyright (c) 2020-2022 MangDang Technology Co., Limited
+
 Most source code are licensed under MIT, but NOT include the below modules.
 
 ### GPL source code in this repository
-[EEPROM](EEPROM)
 
-[FuelGauge](FuelGauge)
+* [EEPROM](./EEPROM)
+* [FuelGauge](./FuelGauge)
 
 ### Some of the below code comes from internet, will make it clear in the futue.
-[LCD](Python_Module/MangDang/LCD)
+
+* [LCD](./Python_Module/MangDang/LCD)
