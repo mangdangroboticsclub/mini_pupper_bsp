@@ -37,23 +37,36 @@ Many thanks for hdumcke and Tiryoh's great support for this repository.
 Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 - contains only the code required to get the hardware API installed
-- installs on a clean Ubuntu 22.04 Desktop or Server for Raspberry Pi
+- installs on a clean Ubuntu 20.04 Server or Ubuntu 22.04 Desktop or Server for Raspberry Pi
 - Python code is installed as a Python module
 - no root priviledges required to drive any robot API
 - make "calibrate" a system command
 
 ## Prepare installation
 
-- Flash Ubuntu 22.04 to SD card. 
+### Flash Ubuntu preinstalled image to the SD card. 
 
-	Download ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img from the link, https://ubuntu.com/download/raspberry-pi .
+* Download ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img from the link, https://ubuntu.com/download/raspberry-pi , or
+* Download ubuntu-20.04.3-preinstalled-server-arm64+raspi.img.xz from [the official website](https://old-releases.ubuntu.com/releases/focal/) or  [our Google drive link](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi).
 	
-- Boot Raspberry Pi 
+### Boot Raspberry Pi 
 
-	Romote connect Pi by Ethernet or WiFi, please refer to [Find the Current IP Address of a Raspberry Pi](https://raspberrytips.com/find-current-ip-raspberry-pi/)
-	
-	Directly operate by mouse/keyboard/display
-	
+* Romote connect Pi by Ethernet or WiFi, please refer to [Find the Current IP Address of a Raspberry Pi](https://raspberrytips.com/find-current-ip-raspberry-pi/)
+* Directly operate by mouse/keyboard/display
+
+If you prefer to ubuntu 20 server version, you can follow the below steps to install the desktop.
+* Put the SD card into your Raspberry Pi. 
+* Connect the keyboard, mouse to the Pi, and a displayer by HDMI line. 
+* Power on.
+* Follow the prompts to change the password from ubuntu to mangdang, and then install desktop. Before installation, please make sure that raspberry pi is plugged into the network cable to access the Internet. 
+
+```
+$sudo apt install ubuntu-desktop
+# waiting for dozens of minutes depend on your internet spped for the install
+# After installing the desktop, start the desktop. 
+# You only need to reboot it one time. The system will enter the desktop system by default next time.
+$startx
+```
 
 ## Install this repository 
 
@@ -81,7 +94,7 @@ $ sudo reboot
 
 ```
 $ cd QuadrupedRobot/minipupper-bsp
-$ ./test.sh
+$./test.sh
 ```
 
 ## Calibration
