@@ -49,7 +49,7 @@ check_result "Ready"
 
 echo 1500000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 sleep 2
-echo 2500000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
+echo 2000000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 
 check_result "Did you see a leg moving"
 
