@@ -62,15 +62,20 @@ sudo pip install $BASEDIR/Python_Module
 ### reference: https://github.com/bitula/minipupper-dev/blob/main/scripts/minipupper.sh
 getent group gpio || sudo groupadd gpio && sudo gpasswd -a $(whoami) gpio
 getent group dialout || sudo groupadd dialout && sudo gpasswd -a $(whoami) dialout
+getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-minipupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-minipupper.sh"
 EOF
 sudo tee /etc/udev/rules.d/99-minipupper-gpio.rules << EOF > /dev/null
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-minipupper.sh"
+KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
 EOF
 sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
 KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
 KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
+EOF
+sudo tee /etc/udev/rules.d/99-minipupper-spi.rules << EOF > /dev/null
+KERNEL=="spidev0.0", OWNER="root", GROUP="spi", MODE="0660"
 EOF
 
 sudo tee /usr/lib/udev/pwm-minipupper.sh << "EOF" > /dev/null

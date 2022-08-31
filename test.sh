@@ -49,9 +49,16 @@ check_result "Ready"
 
 echo 1500000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 sleep 2
-echo 2500000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
+echo 2000000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 
 check_result "Did you see a leg moving"
+
+### Reset servo
+echo 0 > /sys/class/pwm/pwmchip0/pwm4/enable
+echo 0 > /sys/class/gpio/gpio25/value
+sleep 1
+echo 1 > /sys/class/pwm/pwmchip0/pwm4/enable
+echo 1 > /sys/class/gpio/gpio25/value
 
 echo "Your base installation looks OK"
 echo "You may now proceed to calibrate Minipupper"
