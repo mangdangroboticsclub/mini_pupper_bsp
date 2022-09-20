@@ -1,9 +1,9 @@
 from MangDang.minipupper.HardwareInterface import HardwareInterface
 from MangDang.minipupper.Config import PWMParams, ServoParams
+import MangDang.minipupper.nvram as nvram
 import numpy as np
 import re
 
-ServoCalibrationFilePath = '/sys/bus/nvmem/devices/3-00500/nvmem'
 
 def get_motor_name(i, j):
     motor_type = {0: "abduction", 1: "inner", 2: "outer"}  # Top  # Bottom
@@ -13,7 +13,7 @@ def get_motor_name(i, j):
 
 
 def get_motor_setpoint(i, j):
-    data = np.array([[0, 0, 0, 0], [90, 90, 90, 90], [-90, -90, -90, -90]])
+    data = np.array([[0, 0, 0, 0], [45, 45, 45, 45], [-45, -45, -45, -45]])
     return data[i, j]
 
 
@@ -58,7 +58,7 @@ def step_until(hardware_interface, axis, leg, set_point):
         Angle offset needed to correct the link.
     """
     found_position = False
-    set_names = ["vertical", "horizontal", "horizontal"]
+    set_names = ["horizontal", "horizontal", "vertical"]
     offset = 0
     while not found_position:
         move_input = str(
@@ -134,7 +134,11 @@ def calibrate_angle_offset(hardware_interface):
                 )
                 print("Final offset: ", offset)
 
-                hardware_interface.servo_params.neutral_angle_degrees[axis, leg_index] = - offset
+                # The upper leg link has a different equation because we're calibrating to make it horizontal, not vertical
+                if axis == 1:
+                    hardware_interface.servo_params.neutral_angle_degrees[axis, leg_index] = set_point - offset
+                else:
+                    hardware_interface.servo_params.neutral_angle_degrees[axis, leg_index] = -(set_point + offset)
                 print("Calibrated neutral angle: ", hardware_interface.servo_params.neutral_angle_degrees[axis, leg_index])
 
                 # Send the servo command using the new beta value and check that it's ok
@@ -153,23 +157,9 @@ def calibrate_angle_offset(hardware_interface):
 
 
 def overwrite_ServoCalibration_file(servo_params):
-    buf_matrix = np.zeros((3, 4))
-    for i in range(3):
-        for j in range(4):
-            buf_matrix[i,j]= servo_params.neutral_angle_degrees[i,j]
-
-    # Format array object string for np.array
-    p1 = re.compile("([0-9]\.) ( *)") # pattern to replace the space that follows each number with a comma
-    partially_formatted_matrix = p1.sub(r"\1,\2", str(buf_matrix))
-    p2 = re.compile("(\]\n)") # pattern to add a comma at the end of the first two lines
-    formatted_matrix_with_required_commas = p2.sub("],\n", partially_formatted_matrix)
-
-    with open(ServoCalibrationFilePath, "w") as nv_f:
-        _tmp = str(buf_matrix)
-        _tmp = _tmp.replace('.' , ',')
-        _tmp = _tmp.replace('[' , '')
-        _tmp = _tmp.replace(']' , '')
-        print(_tmp, file = nv_f)
+    data = {'MICROS_PER_RAD': servo_params.micros_per_rad,
+            'NEUTRAL_ANGLE_DEGREES': servo_params.neutral_angle_degrees}
+    nvram.write(data)
 
 
 def main():
