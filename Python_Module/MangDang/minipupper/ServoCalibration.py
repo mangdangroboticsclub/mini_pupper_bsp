@@ -1,5 +1,5 @@
 # Minipupper stores calibration data in nvram
-# this is where we read it from it it is available
+# this is where we read it from if it is available
 
 import numpy as np
 import MangDang.minipupper.nvram as nvram
