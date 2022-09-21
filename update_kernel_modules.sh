@@ -8,8 +8,8 @@ BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ### Fix audio device
 AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
 for f in test.sh FuelGauge/battery_monitor System/rc.local; do
-    if ! grep -q "mpg123 -a" $f; then
-        sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $f
+    if ! grep -q "mpg123 -a" $BASEDIR/$f; then
+        sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
     fi
 done
 if ! grep -q "mpg123 -a" /etc/rc.local; then
