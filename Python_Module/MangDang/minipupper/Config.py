@@ -1,5 +1,5 @@
 import numpy as np
-from MangDang.minipupper.ServoCalibration import MICROS_PER_RAD
+from MangDang.minipupper.ServoCalibration import MICROS_PER_RAD, NEUTRAL_ANGLE_DEGREES
 from MangDang.minipupper.HardwareConfig import PS4_COLOR, PS4_DEACTIVATED_COLOR
 from enum import Enum
 
@@ -17,21 +17,8 @@ class ServoParams:
         self.micros_per_rad = MICROS_PER_RAD  # Must be calibrated
 
         # The neutral angle of the joint relative to the modeled zero-angle in degrees, for each joint
-        try:
-            with open("/sys/bus/nvmem/devices/3-00500/nvmem", "rb") as nv_f:
-                arr1 = np.array(eval(nv_f.readline()))
-                arr2 = np.array(eval(nv_f.readline()))
-                matrix = np.append(arr1, arr2)
-                arr3 = np.array(eval(nv_f.readline()))
-                matrix = np.append(matrix, arr3)
-                matrix.resize(3,4)
-                print("Get nv calibration params: \n" , matrix)
-        except:
-            print("Error, get nv calibration params failed, use default value. Please calibrate your pupper !")
-            matrix = np.array(
-            [[-9, 9, 12, 15], [35, 35, 60, 35], [-30, -27, -22, -48]]
-            )
-        self.neutral_angle_degrees = matrix
+        self.neutral_angle_degrees = NEUTRAL_ANGLE_DEGREES
+
         self.servo_multipliers = np.array(
             [[1, 1, -1, -1], [-1, 1, -1, 1], [-1, 1, -1, 1]]
         )
@@ -206,6 +193,7 @@ class Configuration:
     def phase_length(self):
         return 2 * self.overlap_ticks + 2 * self.swing_ticks
 
+        
 class SimulationConfig:
     def __init__(self):
         self.XML_IN = "pupper.xml"

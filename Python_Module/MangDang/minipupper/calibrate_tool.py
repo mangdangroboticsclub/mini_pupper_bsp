@@ -10,8 +10,8 @@ import sys
 import numpy as np
 from pathlib import Path
 from MangDang.minipupper.HardwareInterface import HardwareInterface
+import MangDang.minipupper.nvram as nvram
 
-ServoCalibrationFilePath = '/sys/bus/nvmem/devices/3-00500/nvmem'
 
 class LegPositionScale:
 
@@ -86,6 +86,7 @@ class CalibrationTool:
 
         
         # calibration data
+        self.MICROS_PER_RAD = 11.111 * 180.0 / np.pi
         self.Matrix_EEPROM = np.array([[0, 0, 0, 0], [45, 45, 45, 45], [-45, -45, -45, -45]])
      
         self.ServoStandardLAngle =     [[0,0,0,0],[45,45,45,45],[-45,-45,-45,-45]]
@@ -145,17 +146,12 @@ class CalibrationTool:
     
         #read all lines text from EEPROM
         try:
-            with open(ServoCalibrationFilePath, "rb") as nv_f:
-                arr1 = np.array(eval(nv_f.readline()))
-                arr2 = np.array(eval(nv_f.readline()))
-                matrix = np.append(arr1, arr2)
-                arr3 = np.array(eval(nv_f.readline()))
-                matrix = np.append(matrix, arr3)
-                matrix.resize(3,4)
-                self.Matrix_EEPROM = matrix
-                print("Get nv calibration params: \n" , self.Matrix_EEPROM)
+            data = nvram.read()
+            self.MICROS_PER_RAD = data['MICROS_PER_RAD']
+            self.Matrix_EEPROM = data['NEUTRAL_ANGLE_DEGREES']
+            print("Get nv calibration params: \n" , self.Matrix_EEPROM)
         except:
-            matrix = np.array([[0, 0, 0, 0], [45, 45, 45, 45], [-45, -45, -45, -45]])
+            matrix = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
             self.Matrix_EEPROM = matrix
         #update
         
@@ -177,26 +173,10 @@ class CalibrationTool:
     def writeCalibrationFile(self):
     
         #write matrix to EEPROM
-        buf_matrix = np.zeros((3, 4))
-        for i in range(3):
-            for j in range(4):
-                buf_matrix[i,j]= self.Matrix_EEPROM[i,j]
+        data = {'MICROS_PER_RAD': self.MICROS_PER_RAD,
+                'NEUTRAL_ANGLE_DEGREES': self.Matrix_EEPROM}
+        nvram.write(data)
 
-        # Format array object string for np.array
-        p1 = re.compile("([0-9]\.) ( *)") # pattern to replace the space that follows each number with a comma
-        partially_formatted_matrix = p1.sub(r"\1,\2", str(buf_matrix))
-        p2 = re.compile("(\]\n)") # pattern to add a comma at the end of the first two lines
-        formatted_matrix_with_required_commas = p2.sub("],\n", partially_formatted_matrix)
-        
-        with open(ServoCalibrationFilePath, "w") as nv_f:
-            _tmp = str(buf_matrix)
-            _tmp = _tmp.replace('.' , ',')
-            _tmp = _tmp.replace('[' , '')
-            _tmp = _tmp.replace(']' , '')
-            print(_tmp, file = nv_f)
-            nv_f.close()
-
-        return True
     def getLegSlidersValue(self):
 
         value = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]

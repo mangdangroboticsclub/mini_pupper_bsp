@@ -1,8 +1,4 @@
-import os
-import sys
-
 from MangDang.minipupper.Config import ServoParams, PWMParams
-#from __future__ import division
 import numpy as np
 
 class HardwareInterface:

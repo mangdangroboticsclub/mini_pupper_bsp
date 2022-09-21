@@ -51,9 +51,7 @@ sudo python get-pip.py
 sudo apt install -y python3-dev
 sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 if [ $(lsb_release -cs) == "jammy" ]; then
-    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/Config.py
-    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/calibrate_tool.py
-    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/calibrate_servos.py
+    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/nvram.py
 fi
 sudo pip install $BASEDIR/Python_Module
 
