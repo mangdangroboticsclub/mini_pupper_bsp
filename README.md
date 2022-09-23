@@ -13,22 +13,22 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 
 ## Mini Pupper Software Architecture
 
-- minipupper-bsp repository: BSP(board support package) based on Ubuntu for MiniPupper.
-- minipupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
-- minipupper-ros repository: ROS(Robot Operating System) packages 
-	minipupper-ros1:default ROS branch
-	minipupper-ros2:ROS 2 branch
+- mini_pupper_bsp repository: BSP(board support package) based on Ubuntu for MiniPupper.
+- mini_pupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
+- mini_pupper_ros repository: ROS(Robot Operating System) packages 
+	ros1:default ROS branch
+	ros2:ROS 2 branch
 
 In other words, there are 2 software versions, that is,
 
-- Basic Ubuntu version: minipupper-bsp repository + minipupper repository.
-- Beyond ROS version: minipupper-bsp repository + minipupper-ros repository.
+- Basic Ubuntu version: mini_pupper_bsp repository + minipupper repository.
+- Beyond ROS version: mini_pupper_bsp repository + minipupper-ros repository.
 
 You can enjoy Mini Pupper using [the pre-built image files](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi), or build yourself.
 
-## About minipupper-bsp
+## About mini_pupper_bsp
 
-[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also created the [minipupper-bsp reference repo](https://github.com/hdumcke/minipupper_base) and released under the MIT License. Our minipupper-bsp repository is derived from his repository.
+[hdumcke](https://github.com/hdumcke/minipupper_base) reviewed [Mini Pupper original basic Ubuntu version repository](https://github.com/mangdangroboticsclub/QuadrupedRobot), and gave the up idea of Mini Pupper Software Architecture, and also created the [mini_pupper_bsp reference repo](https://github.com/hdumcke/minipupper_base) and released under the MIT License. Our mini_pupper_bsp repository is derived from his repository.
 
 [Tiryoh](https://github.com/Tiryoh) is also the contributor to hdumcke's repo and Mini Pupper project. He spent much time to double confirm and co-work together to build this repo.  
 
@@ -76,8 +76,8 @@ $startx
 $ sudo apt install -y git
 $ mkdir QuadrupedRobot
 $ cd QuadrupedRobot
-$ git clone https://github.com/mangdangroboticsclub/minipupper-bsp.git
-$ cd minipupper-bsp
+$ git clone https://github.com/mangdangroboticsclub/mini_pupper_bsp.git
+$ cd mini_pupper_bsp
 $ ./install.sh	
 $ sudo reboot
 ```
@@ -85,7 +85,7 @@ $ sudo reboot
 2nd boot
 
 ```
-$ cd QuadrupedRobot/minipupper-bsp
+$ cd QuadrupedRobot/mini_pupper_bsp
 $ ./update_kernel_modules.sh	
 $ sudo reboot
 ```
@@ -93,7 +93,7 @@ $ sudo reboot
 3rd boot
 
 ```
-$ cd QuadrupedRobot/minipupper-bsp
+$ cd QuadrupedRobot/mini_pupper_bsp
 $./test.sh
 ```
 

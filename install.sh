@@ -53,8 +53,8 @@ sudo git config --global --add safe.directory $BASEDIR # temporary fix https://b
 if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/nvram.py
 fi
-sudo rm -rf /var/lib/minipupper-bsp
-sudo cp -r $BASEDIR/Display /var/lib/minipupper-bsp
+sudo rm -rf /var/lib/mini_pupper_bsp
+sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
 sudo pip install $BASEDIR/Python_Module
 
 ### Make pwm sysfs and nvmem work for non-root users

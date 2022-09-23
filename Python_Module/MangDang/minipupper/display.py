@@ -30,7 +30,7 @@ class BehaviorState(Enum):
 
 class Display:
 
-    def __init__(self, image_dir='/var/lib/minipupper-bsp'):
+    def __init__(self, image_dir='/var/lib/mini_pupper_bsp'):
         self.image_dir = image_dir
         self.thread = None
         self.current_state = None
