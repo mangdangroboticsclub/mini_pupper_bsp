@@ -1,8 +1,8 @@
-# Minipupper stores calibration data in nvram
+# Mini Pupper stores calibration data in nvram
 # this is where we read it from if it is available
 
 import numpy as np
-import MangDang.minipupper.nvram as nvram
+import MangDang.mini_pupper.nvram as nvram
 
 
 MICROS_PER_RAD = 11.111 * 180.0 / np.pi

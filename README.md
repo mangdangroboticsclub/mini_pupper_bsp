@@ -1,6 +1,6 @@
 # Mini Pupper - ROS, OpenCV, Open-source, Pi Robot Dog
 
-This repository is the BSP(board support package) for MiniPupper.
+This repository is the BSP(board support package) for Mini Pupper.
 
 Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [YouTube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
 
@@ -13,7 +13,7 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 
 ## Mini Pupper Software Architecture
 
-- mini_pupper_bsp repository: BSP(board support package) based on Ubuntu for MiniPupper.
+- mini_pupper_bsp repository: BSP(board support package) based on Ubuntu for Mini Pupper.
 - mini_pupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
 - mini_pupper_ros repository: ROS(Robot Operating System) packages 
 	ros1:default ROS branch
@@ -21,8 +21,8 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 
 In other words, there are 2 software versions, that is,
 
-- Basic Ubuntu version: mini_pupper_bsp repository + minipupper repository.
-- Beyond ROS version: mini_pupper_bsp repository + minipupper-ros repository.
+- Basic Ubuntu version: mini_pupper_bsp repository + mini_pupper repository.
+- Beyond ROS version: mini_pupper_bsp repository + mini_pupper_ros repository.
 
 You can enjoy Mini Pupper using [the pre-built image files](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi), or build yourself.
 

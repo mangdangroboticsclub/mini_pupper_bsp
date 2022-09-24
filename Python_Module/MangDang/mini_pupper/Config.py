@@ -1,6 +1,6 @@
 import numpy as np
-from MangDang.minipupper.ServoCalibration import MICROS_PER_RAD, NEUTRAL_ANGLE_DEGREES
-from MangDang.minipupper.HardwareConfig import PS4_COLOR, PS4_DEACTIVATED_COLOR
+from MangDang.mini_pupper.ServoCalibration import MICROS_PER_RAD, NEUTRAL_ANGLE_DEGREES
+from MangDang.mini_pupper.HardwareConfig import PS4_COLOR, PS4_DEACTIVATED_COLOR
 from enum import Enum
 
 # TODO: put these somewhere else

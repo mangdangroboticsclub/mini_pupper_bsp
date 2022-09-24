@@ -1,4 +1,4 @@
-from MangDang.minipupper.HardwareInterface import HardwareInterface
+from MangDang.mini_pupper.HardwareInterface import HardwareInterface
 import numpy as np
 
 

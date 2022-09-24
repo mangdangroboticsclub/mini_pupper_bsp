@@ -18,8 +18,8 @@ tmp=$(ps aux | grep unattended-upgrade | grep -v unattended-upgrade-shutdown | g
 done
 
 ### Give a meaningfull hostname
-grep -q "minipupper" /etc/hostname || echo "minipupper" | sudo tee /etc/hostname
-grep -q "minipupper" /etc/hosts || echo "127.0.0.1	minipupper" | sudo tee -a /etc/hosts
+grep -q "mini_pupper" /etc/hostname || echo "mini_pupper" | sudo tee /etc/hostname
+grep -q "mini_pupper" /etc/hosts || echo "127.0.0.1	mini_pupper" | sudo tee -a /etc/hosts
 
 
 ### upgrade Ubuntu and install required packages
@@ -51,7 +51,7 @@ sudo python get-pip.py
 sudo apt install -y python3-dev
 sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 if [ $(lsb_release -cs) == "jammy" ]; then
-    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/minipupper/nvram.py
+    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/mini_pupper/nvram.py
 fi
 sudo rm -rf /var/lib/mini_pupper_bsp
 sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
@@ -59,26 +59,26 @@ sudo pip install $BASEDIR/Python_Module
 
 ### Make pwm sysfs and nvmem work for non-root users
 ### reference: https://github.com/raspberrypi/linux/issues/1983
-### reference: https://github.com/bitula/minipupper-dev/blob/main/scripts/minipupper.sh
+### reference: https://github.com/bitula/mini_pupper-dev/blob/main/scripts/mini_pupper.sh
 getent group gpio || sudo groupadd gpio && sudo gpasswd -a $(whoami) gpio
 getent group dialout || sudo groupadd dialout && sudo gpasswd -a $(whoami) dialout
 getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
-sudo tee /etc/udev/rules.d/99-minipupper-pwm.rules << EOF > /dev/null
-KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-minipupper.sh"
+sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
+KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
-sudo tee /etc/udev/rules.d/99-minipupper-gpio.rules << EOF > /dev/null
-KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-minipupper.sh"
+sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
+KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
 EOF
-sudo tee /etc/udev/rules.d/99-minipupper-nvmem.rules << EOF > /dev/null
+sudo tee /etc/udev/rules.d/99-mini_pupper-nvmem.rules << EOF > /dev/null
 KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
 KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
 EOF
-sudo tee /etc/udev/rules.d/99-minipupper-spi.rules << EOF > /dev/null
+sudo tee /etc/udev/rules.d/99-mini_pupper-spi.rules << EOF > /dev/null
 KERNEL=="spidev0.0", OWNER="root", GROUP="spi", MODE="0660"
 EOF
 
-sudo tee /usr/lib/udev/pwm-minipupper.sh << "EOF" > /dev/null
+sudo tee /usr/lib/udev/pwm-mini_pupper.sh << "EOF" > /dev/null
 #!/bin/bash
 for i in $(seq 0 15); do
     echo $i > /sys/class/pwm/pwmchip0/export
@@ -87,9 +87,9 @@ for i in $(seq 0 15); do
     chmod 666 /sys/class/pwm/pwmchip0/pwm$i/enable
 done
 EOF
-sudo chmod +x /usr/lib/udev/pwm-minipupper.sh
+sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
-sudo tee /usr/lib/udev/gpio-minipupper.sh << EOF > /dev/null
+sudo tee /usr/lib/udev/gpio-mini_pupper.sh << EOF > /dev/null
 #!/bin/bash
 # Board power
 echo 21 > /sys/class/gpio/export
@@ -108,6 +108,6 @@ echo out > /sys/class/gpio/gpio26/direction
 chmod 666 /sys/class/gpio/gpio26/value
 echo 1 > /sys/class/gpio/gpio26/value
 EOF
-sudo chmod +x /usr/lib/udev/gpio-minipupper.sh
+sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
 sudo udevadm control --reload-rules && sudo udevadm trigger

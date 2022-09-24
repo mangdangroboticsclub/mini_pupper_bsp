@@ -1,5 +1,5 @@
 from enum import Enum
-from MangDang.minipupper.display import Display
+from MangDang.mini_pupper.display import Display
 
 
 class BehaviorState(Enum):

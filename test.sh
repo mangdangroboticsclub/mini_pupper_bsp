@@ -44,7 +44,7 @@ fi
 check_result "Did you see a hex dump"
 
 ### Test servo
-echo "Warning: the next test will move a leg. Please hold Minipupper in our hand"
+echo "Warning: the next test will move a leg. Please hold mini pupper in our hand"
 check_result "Ready"
 
 echo 1500000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
@@ -63,4 +63,4 @@ echo 1 > /sys/class/gpio/gpio21/value
 echo 1 > /sys/class/gpio/gpio25/value
 
 echo "Your base installation looks OK"
-echo "You may now proceed to calibrate Minipupper"
+echo "You may now proceed to calibrate mini pupper"

@@ -1,6 +1,6 @@
-from MangDang.minipupper.HardwareInterface import HardwareInterface
-from MangDang.minipupper.Config import PWMParams, ServoParams
-import MangDang.minipupper.nvram as nvram
+from MangDang.mini_pupper.HardwareInterface import HardwareInterface
+from MangDang.mini_pupper.Config import PWMParams, ServoParams
+import MangDang.mini_pupper.nvram as nvram
 import numpy as np
 import re
 
