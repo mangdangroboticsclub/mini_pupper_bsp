@@ -9,8 +9,8 @@ import sys
 
 import numpy as np
 from pathlib import Path
-from MangDang.minipupper.HardwareInterface import HardwareInterface
-import MangDang.minipupper.nvram as nvram
+from MangDang.mini_pupper.HardwareInterface import HardwareInterface
+import MangDang.mini_pupper.nvram as nvram
 
 
 class LegPositionScale:
@@ -100,7 +100,7 @@ class CalibrationTool:
         screenheight = self.MainWindow.winfo_screenheight()
         size = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
         self.MainWindow.geometry(size)
-        self.MainWindow.title('MiniPupper')   #Mini Pupper Calibration Tool
+        self.MainWindow.title('Mini Pupper')   #Mini Pupper Calibration Tool
         self.MainWindow.update()
         
         #init title
@@ -309,7 +309,7 @@ def updateServoValue(MainWindow,servo):
 def main():
 
     ##############################################    
-    MainWindow = CalibrationTool('MiniPupper Calibration Tool',800,500)
+    MainWindow = CalibrationTool('Mini Pupper Calibration Tool',800,500)
     MainWindow.readCalibrationFile()
     hardware_interface = HardwareInterface()
     try:

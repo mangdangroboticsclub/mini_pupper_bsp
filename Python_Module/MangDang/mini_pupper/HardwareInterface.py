@@ -1,4 +1,4 @@
-from MangDang.minipupper.Config import ServoParams, PWMParams
+from MangDang.mini_pupper.Config import ServoParams, PWMParams
 import numpy as np
 
 class HardwareInterface:
