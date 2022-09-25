@@ -1,8 +1,6 @@
 from MangDang.mini_pupper.HardwareInterface import HardwareInterface
-from MangDang.mini_pupper.Config import PWMParams, ServoParams
 import MangDang.mini_pupper.nvram as nvram
 import numpy as np
-import re
 
 
 def get_motor_name(i, j):

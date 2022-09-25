@@ -99,10 +99,29 @@ $./test.sh
 
 ## Calibration
 
+There are two options how to calibrate mini pupper. You can either use a GUI or a CLI.
+
+### Using the GUI
+
 ```
 # this is a command
 $ calibrate 
 ```
+
+Running this command will bring up a GUI to calibrate mini pupper. For headless installation use X forwarding
+
+### Using the CLI
+
+Run the command:
+
+```
+$ cli-calibrate
+```
+
+and follow the instructions.
+
+Using the CLI give you fine grained control but you have to calibrate each servo every time you run cli-calibrate
+
 
 ## License
 
