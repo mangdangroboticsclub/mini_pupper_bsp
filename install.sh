@@ -34,6 +34,7 @@ if [ $(lsb_release -cs) == "jammy" ]; then
 fi
 
 ### Install
+$BASEDIR/prepare_dkms.sh
 for dir in IO_Configuration FuelGauge System EEPROM; do
     cd $BASEDIR/$dir
     ./install.sh
@@ -111,3 +112,14 @@ EOF
 sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
 sudo udevadm control --reload-rules && sudo udevadm trigger
+
+### Fix audio device
+AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
+for f in test.sh FuelGauge/battery_monitor System/rc.local; do
+    if ! grep -q "mpg123 -a" $BASEDIR/$f; then
+        sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
+    fi
+done
+if ! grep -q "mpg123 -a" /etc/rc.local; then
+    sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
+fi

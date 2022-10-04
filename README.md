@@ -70,8 +70,6 @@ $startx
 
 ## Install this repository 
 
-1st boot
-
 ```
 $ sudo apt install -y git
 $ mkdir QuadrupedRobot
@@ -83,14 +81,6 @@ $ sudo reboot
 ```
 
 2nd boot
-
-```
-$ cd QuadrupedRobot/mini_pupper_bsp
-$ ./update_kernel_modules.sh	
-$ sudo reboot
-```
-
-3rd boot
 
 ```
 $ cd QuadrupedRobot/mini_pupper_bsp
