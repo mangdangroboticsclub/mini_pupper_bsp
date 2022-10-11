@@ -17,7 +17,7 @@ if ! grep -q "mpg123 -a" /etc/rc.local; then
 fi
 
 ### Reinstall kernel modules
-for dir in FuelGauge EEPROM; do
-    cd $BASEDIR/$dir
-    ./install.sh
-done
+#for dir in FuelGauge EEPROM; do
+#    cd $BASEDIR/$dir
+#    ./install.sh
+#done

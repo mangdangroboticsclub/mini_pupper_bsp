@@ -103,10 +103,10 @@ chmod 666 /sys/class/gpio/gpio25/value
 echo 1 > /sys/class/gpio/gpio25/value
 
 # LCD power
-echo 26 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio26/direction
-chmod 666 /sys/class/gpio/gpio26/value
-echo 1 > /sys/class/gpio/gpio26/value
+echo 22 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio22/direction
+chmod 666 /sys/class/gpio/gpio22/value
+echo 1 > /sys/class/gpio/gpio22/value
 EOF
 sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
