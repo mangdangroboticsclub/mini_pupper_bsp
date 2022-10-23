@@ -7,11 +7,6 @@ set -x
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-
-make clean
-make
-make install
-
 sudo cp battery_monitor /usr/bin/
 sudo sed -i "s|BASEDIR|$BASEDIR/..|" /usr/bin/battery_monitor
 sudo cp battery_monitor.service /lib/systemd/system/
