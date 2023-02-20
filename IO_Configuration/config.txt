@@ -37,6 +37,9 @@ display_auto_detect=1
 arm_64bit=1
 dtoverlay=dwc2
 
+# Enable serial buss to ESP32
+dtoverlay=uart3
+
 
 [all]
 # Required for mini pupper
@@ -45,9 +48,6 @@ dtoverlay=i2c3,pins_4_5
 dtoverlay=i2c4,pins_6_7
 dtoverlay=spi0-1cs
 dtoverlay=i2c-pwm-pca9685a
-# dtoverlay=gpio-fan
-# dtoverlay=audremap,pins_18_19
-# dtoverlay=act-led,activelow=on
 dtoverlay=audremap,pins_12_13
 dtparam=pwr_led_trigger=none
 dtparam=pwr_led_activelow=off
