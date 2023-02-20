@@ -1,6 +1,7 @@
 from MangDang.mini_pupper.Config import ServoParams, PWMParams
 import numpy as np
 
+
 class HardwareInterface:
     def __init__(self):
         self.pwm_params = PWMParams()
@@ -13,29 +14,8 @@ class HardwareInterface:
         send_servo_command(self.pwm_params, self.servo_params, joint_angle, axis, leg)
 
 
-def pwm_to_duty_cycle(pulsewidth_micros, pwm_params):
-    """Converts a pwm signal (measured in microseconds) to a corresponding duty cycle on the gpio pwm pin
-
-    Parameters
-    ----------
-    pulsewidth_micros : float
-        Width of the pwm signal in microseconds
-    pwm_params : PWMParams
-        PWMParams object
-
-    Returns
-    -------
-    float
-        PWM duty cycle corresponding to the pulse width
-    """
-    pulsewidth_micros = int(pulsewidth_micros / 1e6 * pwm_params.freq * pwm_params.range)
-    if np.isnan(pulsewidth_micros):
-        return 0
-    return int(np.clip(pulsewidth_micros, 0, 4096))
-
-
-def angle_to_pwm(angle, servo_params, axis_index, leg_index):
-    """Converts a desired servo angle into the corresponding PWM command
+def angle_to_position(angle, servo_params, axis_index, leg_index):
+    """Converts a desired servo angle into the corresponding position command
 
     Parameters
     ----------
@@ -51,53 +31,41 @@ def angle_to_pwm(angle, servo_params, axis_index, leg_index):
     Returns
     -------
     float
-        PWM width in microseconds
+        desired servo position
     """
-    angle_deviation = (
-                              angle - servo_params.neutral_angles[axis_index, leg_index]
-                      ) * servo_params.servo_multipliers[axis_index, leg_index]
-    pulse_width_micros = (
-            servo_params.neutral_position_pwm
-            + servo_params.micros_per_rad * angle_deviation
-    )
-    return pulse_width_micros
+    angle_deviation = (angle - servo_params.neutral_angles[axis_index, leg_index]) * servo_params.servo_multipliers[axis_index, leg_index]
+    servo_position = (servo_params.neutral_position + servo_params.micros_per_rad * angle_deviation)
+    return servo_position
 
 
-def angle_to_duty_cycle(angle, pwm_params, servo_params, axis_index, leg_index):
-    duty_cycle_f = angle_to_pwm(angle, servo_params, axis_index, leg_index) * 1e3
-    if np.isnan(duty_cycle_f):
+def angle_to_servo_position(angle, pwm_params, servo_params, axis_index, leg_index):
+    servo_position_f = angle_to_position(angle, servo_params, axis_index, leg_index)
+    if np.isnan(servo_position_f):
         return 0
-    return int(duty_cycle_f)
-
-
-def initialize_pwm(pi, pwm_params):
-    pi.set_pwm_freq(pwm_params.freq)
+    return int(servo_position_f)
 
 
 def send_servo_commands(pwm_params, servo_params, joint_angles):
+    positions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for leg_index in range(4):
         for axis_index in range(3):
-            duty_cycle = angle_to_duty_cycle(
+            servo_position = angle_to_servo_position(
                 joint_angles[axis_index, leg_index],
                 pwm_params,
                 servo_params,
                 axis_index,
                 leg_index,
             )
-            # write duty_cycle to pwm linux kernel node
-            file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis_index, leg_index]) + "/duty_cycle"
-            f = open(file_node, "w")
-            f.write(str(duty_cycle))
+            positions[pwm_params.servo_ids[axis_index, leg_index] - 1] = servo_position
+    pwm_params.esp32.servos_set_position(positions)
 
 
 def send_servo_command(pwm_params, servo_params, joint_angle, axis, leg):
-    duty_cycle = angle_to_duty_cycle(joint_angle, pwm_params, servo_params, axis, leg)
-    file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis, leg]) + "/duty_cycle"
-    f = open(file_node, "w")
-    f.write(str(duty_cycle))
+    # not implemented
+    pass
 
 
 def deactivate_servos(pi, pwm_params):
     for leg_index in range(4):
         for axis_index in range(3):
-            pi.set_pwm(pwm_params.pins[axis_index, leg_index], 0, 0)
+            pi.set_pwm(pwm_params.servo_ids[axis_index, leg_index], 0, 0)

@@ -1,5 +1,5 @@
 [Unit]
-Description=max17205 battery monitor service
+Description=battery monitor service
 
 [Service]
 Type=oneshot

@@ -221,4 +221,14 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Python
+Python_Module/.eggs/
+Python_Module/MangDang/mini_pupper/__pycache__
+Python_Module/MangDang.egg-info/
+.pytest_cache
 
+# esp32-proxy
+esp32_proxy/esp32-proxy
+
+# esp32
+esp32/build
