@@ -46,9 +46,12 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 ### Flash Ubuntu preinstalled image to the SD card. 
 
-* Download ubuntu-22.04.1-preinstalled-desktop-arm64+raspi.img from the link, https://ubuntu.com/download/raspberry-pi , or
-* Download ubuntu-20.04.3-preinstalled-server-arm64+raspi.img.xz from [the official website](https://old-releases.ubuntu.com/releases/focal/) or  [our Google drive link](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi).
-	
+Choose one of the following 2 OS. Note that ROS 1 Noetic only supports Ubuntu 20.04.
+
+* Download `ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi
+* Download `ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz` from [the official website](https://cdimage.ubuntu.com/ubuntu/releases/20.04/release/) or  [our Google drive link](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi)
+
+
 ### Boot Raspberry Pi 
 
 * Romote connect Pi by Ethernet or WiFi, please refer to [Find the Current IP Address of a Raspberry Pi](https://raspberrytips.com/find-current-ip-raspberry-pi/)
@@ -60,52 +63,56 @@ If you prefer to ubuntu 20 server version, you can follow the below steps to ins
 * Power on.
 * Follow the prompts to change the password from ubuntu to mangdang, and then install desktop. Before installation, please make sure that raspberry pi is plugged into the network cable to access the Internet. 
 
-```
-$sudo apt install ubuntu-desktop
+```sh
+sudo apt install ubuntu-desktop
 # waiting for dozens of minutes depend on your internet spped for the install
 # After installing the desktop, start the desktop. 
 # You only need to reboot it one time. The system will enter the desktop system by default next time.
-$startx
+startx
 ```
 
-## Install this repository 
+## Manual installation
 
-```
-$ sudo apt install -y git
-$ mkdir QuadrupedRobot
-$ cd QuadrupedRobot
-$ git clone https://github.com/mangdangroboticsclub/mini_pupper_bsp.git
-$ cd mini_pupper_bsp
-$ ./install.sh	
-$ sudo reboot
+Manual installation is an advanced method. It is strongly recommended to use [the install script](https://github.com/mangdangroboticsclub/mini_pupper).
+
+### Install this repository 
+
+```sh
+sudo apt update
+sudo apt upgrade
+sudo apt install -y git python3-pip
+cd ~
+git clone https://github.com/mangdangroboticsclub/mini_pupper_bsp.git
+cd mini_pupper_bsp
+./install.sh	
+sudo reboot
 ```
 
 2nd boot
 
 ```
-$ cd QuadrupedRobot/mini_pupper_bsp
-$./test.sh
+cd ~/mini_pupper_bsp
+./test.sh
 ```
 
-## Calibration
+### Calibration
 
 There are two options how to calibrate mini pupper. You can either use a GUI or a CLI.
 
-### Using the GUI
+#### Using the GUI
 
-```
-# this is a command
-$ calibrate 
+```sh
+calibrate  # this is a command
 ```
 
 Running this command will bring up a GUI to calibrate mini pupper. For headless installation use X forwarding
 
-### Using the CLI
+#### Using the CLI
 
 Run the command:
 
-```
-$ cli-calibrate
+```sh
+cli-calibrate  # this is a command
 ```
 
 and follow the instructions.
