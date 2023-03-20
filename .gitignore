@@ -220,4 +220,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-
+# Python
+Python_Module/.eggs/
+Python_Module/MangDang/mini_pupper/__pycache__
+Python_Module/MangDang.egg-info/
+.pytest_cache
+Python_Module/ChangeLog
+Python_Module/AUTHORS
+mock_api/ChangeLog
+mock_api/AUTHORS
