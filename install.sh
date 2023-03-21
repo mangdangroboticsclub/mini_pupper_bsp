@@ -57,7 +57,7 @@ if [ $(lsb_release -cs) == "jammy" ]; then
 fi
 sudo rm -rf /var/lib/mini_pupper_bsp
 sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
-sudo pip install $BASEDIR/Python_Module
+sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Module
 
 ### Make pwm sysfs and nvmem work for non-root users
 ### reference: https://github.com/raspberrypi/linux/issues/1983
