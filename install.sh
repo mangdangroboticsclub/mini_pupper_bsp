@@ -33,7 +33,18 @@ if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
 fi
 
-### Install
+### Install pip
+cd /tmp
+wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
+sudo rm -rf /var/lib/mini_pupper_bsp
+
+### Install MangDang module
+sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
+sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Module
+
+### Install Components
 $BASEDIR/prepare_dkms.sh
 for dir in IO_Configuration FuelGauge System EEPROM; do
     cd $BASEDIR/$dir
@@ -43,21 +54,12 @@ done
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
-### Install pip
-cd /tmp
-wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
-
 ### Install LCD driver
 sudo apt install -y python3-dev
 sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/mini_pupper/nvram.py
 fi
-sudo rm -rf /var/lib/mini_pupper_bsp
-sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
-sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Module
 
 ### Make pwm sysfs and nvmem work for non-root users
 ### reference: https://github.com/raspberrypi/linux/issues/1983
