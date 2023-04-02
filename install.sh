@@ -48,7 +48,7 @@ sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Mo
 
 ### Install Components
 $BASEDIR/prepare_dkms.sh
-for dir in IO_Configuration FuelGauge System EEPROM; do
+for dir in IO_Configuration FuelGauge System EEPROM PWMController; do
     cd $BASEDIR/$dir
     ./install.sh
 done
