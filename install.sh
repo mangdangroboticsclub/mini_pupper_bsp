@@ -41,6 +41,8 @@ sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangr
 sudo rm -rf /var/lib/mini_pupper_bsp
 
 ### Install MangDang module
+sudo apt install -y python3-dev
+sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
 sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Module
 
@@ -55,8 +57,6 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Install LCD driver
-sudo apt install -y python3-dev
-sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/mini_pupper/nvram.py
 fi
