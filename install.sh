@@ -56,9 +56,9 @@ done
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
-### Install LCD driver
+### Patch path to nvram for Ubuntu 22.04
 if [ $(lsb_release -cs) == "jammy" ]; then
-    sudo sed -i "s/3-00500/3-00501/" $BASEDIR/Python_Module/MangDang/mini_pupper/nvram.py
+    sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
 ### Make pwm sysfs and nvmem work for non-root users
