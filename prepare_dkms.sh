@@ -30,3 +30,13 @@ sudo cp dkms.conf /usr/src/at24-1.0/
 sudo dkms add -m at24 -v 1.0
 sudo dkms build -m at24 -v 1.0
 sudo dkms install -m at24 -v 1.0
+
+cd $BASEDIR/PWMController
+sudo mkdir -p /usr/src/pwm_pca9685-1.0
+sudo cp Makefile /usr/src/pwm_pca9685-1.0
+sudo cp pwm_pca9685.c /usr/src/pwm_pca9685-1.0/
+sudo cp dkms.conf /usr/src/pwm_pca9685-1.0/
+
+sudo dkms add -m pwm_pca9685 -v 1.0
+sudo dkms build -m pwm_pca9685 -v 1.0
+sudo dkms install -m pwm_pca9685 -v 1.0
