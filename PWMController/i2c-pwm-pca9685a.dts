@@ -1,0 +1,43 @@
+/dts-v1/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target = <0xffffffff>;
+
+		__overlay__ {
+			#address-cells = <0x01>;
+			#size-cells = <0x00>;
+			clock-frequency = <0x61a80>;
+			status = "okay";
+
+			pca@40 {
+				compatible = "nxp,pca9685-pwm";
+				#pwm-cells = <0x02>;
+				reg = <0x40>;
+				status = "okay";
+				phandle = <0x01>;
+			};
+		};
+	};
+
+	__overrides__ {
+		addr = [00 00 00 01 72 65 67 3a 30 00];
+	};
+
+	__symbols__ {
+		pca = "/fragment@0/__overlay__/pca@40";
+	};
+
+	__fixups__ {
+		i2c1 = "/fragment@0:target:0";
+	};
+
+	__local_fixups__ {
+
+		__overrides__ {
+			addr = <0x00>;
+		};
+	};
+};
