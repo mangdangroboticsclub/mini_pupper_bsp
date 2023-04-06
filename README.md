@@ -130,6 +130,7 @@ Most source code are licensed under MIT, but NOT include the below modules.
 
 * [EEPROM](./EEPROM)
 * [FuelGauge](./FuelGauge)
+* [PWMController](./PWMController)
 
 ### Some of the below code comes from internet, will make it clear in the futue.
 
