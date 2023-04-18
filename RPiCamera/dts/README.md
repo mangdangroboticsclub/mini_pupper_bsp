@@ -6,4 +6,11 @@ The dt-blob-cam1.dts file provides the necessary hardware configuration for the 
 In summary, the dt-blob-cam1.dts file is essential for enabling the CSI camera interface on the Raspberry Pi compute module. Without it, the camera module would not function correctly.
 
 # Where can I find official Raspberry Pi dts examples?
+
 For more information about dts files, please refer to the [RPi_Datasheets](https://datasheets.raspberrypi.org).
+
+# License
+
+* `dt-blob-cam1.dts`
+    * Copyright © 2020 Raspberry Pi (Trading) Ltd.
+    * [BSD 3-Clause](https://spdx.org/licenses/BSD-3-Clause.html) licence
