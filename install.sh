@@ -5,6 +5,29 @@ set -e
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+### Write release file
+echo HARDWARE=\"$(python3 ./mini_pupper_bsp/Python_Module/MangDang/mini_pupper/capabilities.py)\" > ~/mini-pupper-release
+echo MACHINE=\"$(uname -m)\" >> ~/mini-pupper-release
+if [ -f /boot/firmware/user-data ]
+then
+    echo CLOUD_INIT_CLONE=\"$(grep clone /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
+    echo CLOUD_INIT_SCRIPT=\"$(grep setup_out /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
+else
+    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh)\" >> ~/mini-pupper-release
+fi
+echo BSP_VERSION=\"$(cd ~/mini_pupper_bsp; ./get-version.sh)\" >> ~/mini-pupper-release
+cd ~/mini_pupper_bsp
+TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1)
+TAG=$(git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
+BSP_VERSION=./get-version.sh
+if [ "v$BSP_VERSION" == "TAG" ]
+then
+    echo IS_RELEASE=YES >> ~/mini-pupper-release
+else
+    echo IS_RELEASE=NO >> ~/mini-pupper-release
+fi
+
+source  ~/mini-pupper-release
 
 ############################################
 # wait until unattended-upgrade has finished
@@ -33,25 +56,50 @@ if [ $(lsb_release -cs) == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
 fi
 
+### Install LCD images
+sudo rm -rf /var/lib/mini_pupper_bsp
+sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
+
+### Install system components
+$BASEDIR/prepare_dkms.sh
+if [ "$MACHINE" == "x86_64" ]
+then
+    COMPONENTS=(System)
+else
+    COMPONENTS=(IO_Configuration FuelGauge System EEPROM PWMController)
+fi
+for dir in ${COMPONENTS[@]}; do
+    cd $BASEDIR/$dir
+    ./install.sh
+done
+
 ### Install pip
 cd /tmp
 wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
 sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
-sudo rm -rf /var/lib/mini_pupper_bsp
 
-### Install MangDang module
+### Install Python module
 sudo apt install -y python3-dev
 sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
-sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
-sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/Python_Module
+if [ "$MACHINE" == "x86_64" ]
+then
+    PYTHONMODLE=mock_api
+else
+    PYTHONMODLE=Python_Module
+fi
+if [ "$IS_RELEASE" == "YES" ]
+then
+    sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/$PYTHONMODLE
+else
+    sudo pip install $BASEDIR/$PYTHONMODLE
+fi
 
-### Install Components
-$BASEDIR/prepare_dkms.sh
-for dir in IO_Configuration FuelGauge System EEPROM PWMController; do
-    cd $BASEDIR/$dir
-    ./install.sh
-done
+### Do the rest of the istallation only on a physical mini pupper
+if [ "$MACHINE" == "x86_64" ]
+then
+    exit 
+fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
