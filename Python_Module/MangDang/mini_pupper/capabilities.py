@@ -14,3 +14,7 @@ class Capabilities:
 
     def list_capabilities(self):
         return self.capabilities
+
+
+if __name__ == '__main__':
+    print(Capabilities().get_capability('version'))
