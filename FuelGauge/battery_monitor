@@ -13,6 +13,7 @@ do
 		echo 0 > /sys/class/gpio/gpio21/value
 		# install scrip will replace BASEDIR
 		mpg123 BASEDIR/Audio/low_power.mp3
+		/usr/bin/display_low_battery.py 
 	fi
 	sleep 8
 done
