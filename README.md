@@ -24,7 +24,7 @@ In other words, there are 2 software versions, that is,
 - Basic Ubuntu version: mini_pupper_bsp repository + mini_pupper repository.
 - Beyond ROS version: mini_pupper_bsp repository + mini_pupper_ros repository.
 
-You can enjoy Mini Pupper using [the pre-built image files](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi), or build yourself.
+You can enjoy Mini Pupper using [the pre-built image files](https://drive.google.com/drive/folders/1aSKxSVc2tKQPeyAFTI9EaTHUAFZCWseo?usp=sharing), or build yourself.
 
 ## About mini_pupper_bsp
 
@@ -48,8 +48,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 Choose one of the following 2 OS. Note that ROS 1 Noetic only supports Ubuntu 20.04.
 
-* Download `ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi
-* Download `ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz` from [the official website](https://cdimage.ubuntu.com/ubuntu/releases/20.04/release/) or  [our Google drive link](https://drive.google.com/drive/folders/12FDFbZzO61Euh8pJI9oCxN-eLVm5zjyi)
+* Download `ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi or  [our Google drive link](https://drive.google.com/drive/folders/1kIlAAL_uM-_98u1JI_6yRF8cNsiFSFGj?usp=sharing)
 
 
 ### Boot Raspberry Pi 
@@ -57,7 +56,7 @@ Choose one of the following 2 OS. Note that ROS 1 Noetic only supports Ubuntu 20
 * Romote connect Pi by Ethernet or WiFi, please refer to [Find the Current IP Address of a Raspberry Pi](https://raspberrytips.com/find-current-ip-raspberry-pi/)
 * Directly operate by mouse/keyboard/display
 
-If you prefer to ubuntu 20 server version, you can follow the below steps to install the desktop.
+If you prefer to ubuntu desktop version, you can follow the below steps to install the desktop.
 * Put the SD card into your Raspberry Pi. 
 * Connect the keyboard, mouse to the Pi, and a displayer by HDMI line. 
 * Power on.
@@ -99,7 +98,9 @@ cd ~/mini_pupper_bsp
 
 There are two options how to calibrate mini pupper. You can either use a GUI or a CLI.
 
-#### Using the GUI
+#### Using the GUI on the Robot
+
+If you installed desktop, please run the following command.
 
 ```sh
 calibrate  # this is a command
@@ -107,12 +108,15 @@ calibrate  # this is a command
 
 Running this command will bring up a GUI to calibrate mini pupper. For headless installation use X forwarding
 
-#### Using the CLI
+#### Using the CLI on the Laptop
 
-Run the command:
+If you don't installed desktop on the robot, please use the following steps on your Laptop with Ubuntu Desktop:
+
 
 ```sh
-cli-calibrate  # this is a command
+# run on your Laptop with Ubuntu Desktop
+ssh -X ubuntu@IP # IP means your robot IP address, such as, ssh -X ubuntu@192.168.5.109
+calibrate  # this command will display a GUI calibration tool
 ```
 
 and follow the instructions.
@@ -122,12 +126,11 @@ Using the CLI give you fine grained control but you have to calibrate each servo
 
 ## License
 
-Copyright (c) 2020-2022 MangDang Technology Co., Limited
+Copyright (c) 2020-2024 MangDang Technology Co., Limited
 
 Most source code are licensed under MIT, but NOT include the below modules.
 
 ### GPL source code in this repository
 
 * [EEPROM](./EEPROM)
-* [FuelGauge](./FuelGauge)
 * [PWMController](./PWMController)
