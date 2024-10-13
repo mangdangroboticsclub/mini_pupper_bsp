@@ -1,8 +1,8 @@
-# Mini Pupper - ROS, OpenCV, Open-source, Pi Robot Dog
+# Mini Pupper - Generative AI, ROS, OpenCV, Open-source, Pi Robot Dog
 
-This repository is the BSP(board support package) for Mini Pupper.
+This repository is the BSP(board support package) for Mini Pupper version 1.
 
-Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [YouTube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
+[MangDang](https://mangdang.store/) Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [YouTube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
 
 Mini Pupper will make robotics easier for schools, homeschool families, enthusiasts and beyond.
 
@@ -16,8 +16,8 @@ Mini Pupper will make robotics easier for schools, homeschool families, enthusia
 - mini_pupper_bsp repository: BSP(board support package) based on Ubuntu for Mini Pupper.
 - mini_pupper repository: basic movement apps to control Mini Pupper by a controller or webserver or mobile app.
 - mini_pupper_ros repository: ROS(Robot Operating System) packages 
-	ros1:default ROS branch
-	ros2:ROS 2 branch
+	ros1:default ROS branch [End of Life, not support any more]
+	ros2:default ROS branch
 
 In other words, there are 2 software versions, that is,
 
@@ -46,9 +46,8 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 ### Flash Ubuntu preinstalled image to the SD card. 
 
-Choose one of the following 2 OS. Note that ROS 1 Noetic only supports Ubuntu 20.04.
 
-* Download `ubuntu-22.04.2-preinstalled-desktop-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi or  [our Google drive link](https://drive.google.com/drive/folders/1kIlAAL_uM-_98u1JI_6yRF8cNsiFSFGj?usp=sharing)
+* Download `ubuntu-22.04.4-preinstalled-server-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi or  [our Google drive link](https://drive.google.com/drive/folders/1kIlAAL_uM-_98u1JI_6yRF8cNsiFSFGj?usp=sharing)
 
 
 ### Boot Raspberry Pi 
@@ -72,22 +71,28 @@ startx
 
 ## Manual installation
 
-Manual installation is an advanced method. It is strongly recommended to use [the install script](https://github.com/mangdangroboticsclub/mini_pupper).
+Manual installation is an advanced method. 
 
 ### Install this repository 
 
 ```sh
 sudo apt update
 sudo apt upgrade
+reboot
+```
+
+```
 sudo apt install -y git python3-pip
+reboot
+```
+
+```
 cd ~
 git clone https://github.com/mangdangroboticsclub/mini_pupper_bsp.git
 cd mini_pupper_bsp
 ./install.sh	
 sudo reboot
 ```
-
-2nd boot
 
 ```
 cd ~/mini_pupper_bsp
