@@ -24,7 +24,7 @@ In other words, there are 2 software versions, that is,
 - Basic Ubuntu version: mini_pupper_bsp repository + mini_pupper repository.
 - Beyond ROS version: mini_pupper_bsp repository + mini_pupper_ros repository.
 
-You can enjoy Mini Pupper using [the pre-built image files](https://drive.google.com/drive/folders/1aSKxSVc2tKQPeyAFTI9EaTHUAFZCWseo?usp=sharing), or build yourself.
+You can enjoy Mini Pupper using the pre-built image files, or build yourself.
 
 ## About mini_pupper_bsp
 
