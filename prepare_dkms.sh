@@ -20,10 +20,14 @@ sudo dkms install -m max1720x_battery -v 1.0
 cd $BASEDIR/EEPROM
 sudo mkdir -p /usr/src/at24-1.0
 sudo cp Makefile /usr/src/at24-1.0
+# TODO: A kernel-6.8-validated ubuntu_24.04/at24.c should replace the
+# ubuntu_22.04 source below. The 22.04 driver (kernel 5.15 API) is used as
+# the best available fallback; verify DKMS build success on kernel 6.8+
+# before relying on this in production.
 if [ $(lsb_release -cs) == "jammy" ]; then
     sudo cp ubuntu_22.04/* /usr/src/at24-1.0
 else
-    sudo cp ubuntu_20.04/* /usr/src/at24-1.0
+    sudo cp ubuntu_22.04/* /usr/src/at24-1.0
 fi
 sudo cp dkms.conf /usr/src/at24-1.0/
 

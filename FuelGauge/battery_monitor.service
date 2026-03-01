@@ -1,5 +1,6 @@
 [Unit]
 Description=max17205 battery monitor service
+After=network.target
 
 [Service]
 Type=oneshot
@@ -8,4 +9,4 @@ ExecStart=/usr/bin/battery_monitor
 User=root
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=multi-user.target

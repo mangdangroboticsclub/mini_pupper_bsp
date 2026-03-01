@@ -1,4 +1,5 @@
-import netifaces as ni
+import socket
+import psutil
 from PIL import Image, ImageDraw, ImageFont
 from enum import Enum
 from MangDang.LCD.ST7789 import ST7789
@@ -47,19 +48,25 @@ class Display:
 
     def show_image(self, image_path):
         image = Image.open(image_path)
-        image.resize((320, 240))
+        # S2: resize() returns a new Image; assign back to avoid displaying unscaled image
+        image = image.resize((320, 240))
         self.disp.display(image)
 
     def show_ip(self):
         image_path = "%s/%s" % (self.image_dir, self.state_to_image(BehaviorState.IP))
         image = Image.open(image_path)
-        image.resize((320, 240))
-        if ni.AF_INET in ni.ifaddresses('wlan0').keys():
-            ip = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
-        elif ni.AF_INET in ni.ifaddresses('eth0').keys():
-            ip = ni.ifaddresses('eth0')[ni.AF_INET][0]['addr']
-        else:
-            ip = 'no IPv4 address found'
+        # S2: assign the resized image
+        image = image.resize((320, 240))
+        # W7: replaced unmaintained netifaces with psutil
+        ip = 'no IPv4 address found'
+        addrs = psutil.net_if_addrs()
+        for iface in ('wlan0', 'eth0'):
+            for addr in addrs.get(iface, []):
+                if addr.family == socket.AF_INET:
+                    ip = addr.address
+                    break
+            if ip != 'no IPv4 address found':
+                break
         font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 30)
         draw = ImageDraw.Draw(image)
         text = "IP: %s" % str(ip)

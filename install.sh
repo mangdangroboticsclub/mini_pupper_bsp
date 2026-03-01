@@ -2,8 +2,18 @@
 
 set -e
 
+sudo apt update
+# NOTE: Run 'sudo apt update && sudo apt upgrade' manually before running
+# this script to ensure system packages are up to date. Performing a full
+# upgrade here risks changing the running kernel mid-install, which would
+# invalidate DKMS modules built in the steps below.
+
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+### Detect Ubuntu version
+UBUNTU_CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
 
 ### Write release file
 echo BUILD_DATE=\"$(date)\" > ~/mini-pupper-release
@@ -14,11 +24,11 @@ then
     echo CLOUD_INIT_CLONE=\"$(grep clone /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
     echo CLOUD_INIT_SCRIPT=\"$(grep setup_out /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
 else
-    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh)\" >> ~/mini-pupper-release
+    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh 2>/dev/null || echo 'none')\" >> ~/mini-pupper-release
 fi
 echo BSP_VERSION=\"$(cd ~/mini_pupper_bsp; ./get-version.sh)\" >> ~/mini-pupper-release
 cd ~/mini_pupper_bsp
-TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1)
+TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1 2>/dev/null || true)
 TAG=$(git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 BSP_VERSION=$(./get-version.sh)
 if [ "v$BSP_VERSION" == "$TAG" ]
@@ -48,12 +58,18 @@ grep -q "mini_pupper" /etc/hosts || echo "127.0.0.1	mini_pupper" | sudo tee -a /
 
 ### upgrade Ubuntu and install required packages
 echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
-sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
-sudo apt update
-sudo apt -y upgrade
-sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg321 python3-tk openssh-server
-sudo sed -i "s/pulse/alsa/" /etc/libao.conf
-if [ $(lsb_release -cs) == "jammy" ]; then
+# Ubuntu 24.04 (Noble) uses DEB822 format in /etc/apt/sources.list.d/ubuntu.sources
+# Ubuntu 22.04 (Jammy) uses traditional /etc/apt/sources.list
+if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
+    sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+fi
+# W1: mpg123 is the binary called by rc.local / battery_monitor / test.sh;
+#     mpg321 installs a different binary name and must not be used here.
+sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
+if [ -f /etc/libao.conf ]; then
+    sudo sed -i "s/pulse/alsa/" /etc/libao.conf
+fi
+if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
 fi
 
@@ -74,15 +90,23 @@ for dir in ${COMPONENTS[@]}; do
     ./install.sh
 done
 
-### Install pip
+### Install pip and Python dependencies
+# Ubuntu 24.04 enforces PEP 668 (externally-managed-environment),
+# so we need --break-system-packages for system-wide pip installs.
+PIP_BREAK="--break-system-packages"
+if [ "$UBUNTU_CODENAME" == "jammy" ]; then
+    PIP_BREAK=""
+fi
+
 cd /tmp
 wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
+sudo python get-pip.py $PIP_BREAK
+sudo pip install $PIP_BREAK setuptools lgpio
+sudo pip install $PIP_BREAK sounddevice soundfile
 
 ### Install Python module
 sudo apt install -y python3-dev
-sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
+sudo git config --global --add safe.directory $BASEDIR
 if [ "$MACHINE" == "x86_64" ]
 then
     PYTHONMODLE=mock_api
@@ -91,22 +115,25 @@ else
 fi
 if [ "$IS_RELEASE" == "YES" ]
 then
-    sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/$PYTHONMODLE
+    sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 else
-    sudo pip install $BASEDIR/$PYTHONMODLE
+    sudo pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 fi
 
-### Do the rest of the istallation only on a physical mini pupper
+### Do the rest of the installation only on a physical mini pupper
 if [ "$MACHINE" == "x86_64" ]
 then
-    exit 
+    exit
 fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
-### Patch path to nvram for Ubuntu 22.04
-if [ $(lsb_release -cs) == "jammy" ]; then
+### Patch path to nvram device node
+# W8: The nvram device address differs between Ubuntu versions; patch for both.
+# TODO: Physically verify the correct nvmem path (3-00500 vs 3-00501) on
+#       Ubuntu 24.04 Noble hardware before relying on this patch in production.
+if [ "$UBUNTU_CODENAME" == "jammy" ] || [ "$UBUNTU_CODENAME" == "noble" ]; then
     sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
@@ -119,8 +146,10 @@ getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
+# W4: Two rules cover both Pi 4 (pinctrl-bcm2711) and Pi 5 (pinctrl-rp1).
 sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
+KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-rp1", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
 EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-nvmem.rules << EOF > /dev/null
@@ -142,24 +171,39 @@ done
 EOF
 sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
-sudo tee /usr/lib/udev/gpio-mini_pupper.sh << EOF > /dev/null
+sudo tee /usr/lib/udev/gpio-mini_pupper.sh << 'EOF' > /dev/null
 #!/bin/bash
-# Board power
-echo 21 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio21/direction
-chmod 666 /sys/class/gpio/gpio21/value
-echo 1 > /sys/class/gpio/gpio21/value
+# S4 TODO: The sysfs GPIO ABI (/sys/class/gpio/) is formally deprecated in
+# kernel 6.8 and is scheduled for removal in a future kernel release.
+# This script should be migrated to use the libgpiod character device API
+# (lgpio / python3-gpiod) in a future update to avoid breakage on kernel
+# upgrades beyond 6.8.
 
-echo 25 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio25/direction
-chmod 666 /sys/class/gpio/gpio25/value
-echo 1 > /sys/class/gpio/gpio25/value
+# Detect GPIO base offset (kernel 6.8+ on Pi uses base 512 instead of 0)
+GPIO_BASE=0
+if [ -d /sys/class/gpio/gpiochip512 ]; then
+    GPIO_BASE=512
+fi
+
+# Board power
+PIN=$((GPIO_BASE + 21))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
+
+PIN=$((GPIO_BASE + 25))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
 
 # LCD power
-echo 26 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio26/direction
-chmod 666 /sys/class/gpio/gpio26/value
-echo 1 > /sys/class/gpio/gpio26/value
+PIN=$((GPIO_BASE + 26))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
 EOF
 sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
@@ -175,3 +219,5 @@ done
 if ! grep -q "mpg123 -a" /etc/rc.local; then
     sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
 fi
+
+grep -q 'alias esp32-cli' ~/.bashrc || echo 'alias esp32-cli="screen /dev/ttyUSB0 115200"' >> ~/.bashrc

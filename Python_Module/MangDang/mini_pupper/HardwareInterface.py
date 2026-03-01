@@ -86,15 +86,15 @@ def send_servo_commands(pwm_params, servo_params, joint_angles):
             )
             # write duty_cycle to pwm linux kernel node
             file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis_index, leg_index]) + "/duty_cycle"
-            f = open(file_node, "w")
-            f.write(str(duty_cycle))
+            with open(file_node, "w") as f:
+                f.write(str(duty_cycle))
 
 
 def send_servo_command(pwm_params, servo_params, joint_angle, axis, leg):
     duty_cycle = angle_to_duty_cycle(joint_angle, pwm_params, servo_params, axis, leg)
     file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis, leg]) + "/duty_cycle"
-    f = open(file_node, "w")
-    f.write(str(duty_cycle))
+    with open(file_node, "w") as f:
+        f.write(str(duty_cycle))
 
 
 def deactivate_servos(pi, pwm_params):

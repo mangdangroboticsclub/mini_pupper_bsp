@@ -16,8 +16,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 #
 # This program is based on
 # https://github.com/pimoroni/st7789-python/blob/master/library/ST7789/__init__.py
@@ -28,8 +28,7 @@ import time
 import numpy as np
 
 import spidev
-import RPi.GPIO as GPIO
-
+import lgpio
 
 
 BG_SPI_CS_BACK = 0
@@ -121,8 +120,10 @@ class ST7789(object):
         if width != height and rotation in [90, 270]:
             raise ValueError("Invalid rotation {} for {}x{} resolution".format(rotation, width, height))
 
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
+        # Open gpiochip0 — the BCM GPIO controller on Pi 4/5.
+        # lgpio uses BCM pin numbers directly via the character device;
+        # it is unaffected by the sysfs base-offset change in kernel 6.8+.
+        self._h = lgpio.gpiochip_open(0)
 
         self._spi = spidev.SpiDev(port, cs)
         self._spi.mode = 0
@@ -140,21 +141,27 @@ class ST7789(object):
         self._offset_top = offset_top
 
         # Set DC as output.
-        GPIO.setup(dc, GPIO.OUT)
+        lgpio.gpio_claim_output(self._h, dc)
 
         # Setup backlight as output (if provided).
         self._backlight = backlight
         if backlight is not None:
-            GPIO.setup(backlight, GPIO.OUT)
-            GPIO.output(backlight, GPIO.LOW)
+            lgpio.gpio_claim_output(self._h, backlight)
+            lgpio.gpio_write(self._h, backlight, 0)
             time.sleep(0.1)
-            GPIO.output(backlight, GPIO.HIGH)
+            lgpio.gpio_write(self._h, backlight, 1)
 
         # Setup reset as output (if provided).
         if rst is not None:
-            GPIO.setup(self._rst, GPIO.OUT)
+            lgpio.gpio_claim_output(self._h, self._rst)
             self.reset()
         self._init()
+
+    def __del__(self):
+        try:
+            lgpio.gpiochip_close(self._h)
+        except Exception:
+            pass
 
     def send(self, data, is_data=True, chunk_size=4096):
         """Write a byte or array of bytes to the display. Is_data parameter
@@ -163,7 +170,7 @@ class ST7789(object):
         single SPI transaction, with a default of 4096.
         """
         # Set DC low for command, high for data.
-        GPIO.output(self._dc, is_data)
+        lgpio.gpio_write(self._h, self._dc, int(is_data))
         # Convert scalar argument to list so either can be passed as parameter.
         if isinstance(data, numbers.Number):
             data = [data & 0xFF]
@@ -175,7 +182,7 @@ class ST7789(object):
     def set_backlight(self, value):
         """Set the backlight on/off."""
         if self._backlight is not None:
-            GPIO.output(self._backlight, value)
+            lgpio.gpio_write(self._h, self._backlight, int(bool(value)))
 
     @property
     def width(self):
@@ -196,11 +203,11 @@ class ST7789(object):
     def reset(self):
         """Reset the display, if reset pin is connected."""
         if self._rst is not None:
-            GPIO.output(self._rst, 1)
+            lgpio.gpio_write(self._h, self._rst, 1)
             time.sleep(0.500)
-            GPIO.output(self._rst, 0)
+            lgpio.gpio_write(self._h, self._rst, 0)
             time.sleep(0.500)
-            GPIO.output(self._rst, 1)
+            lgpio.gpio_write(self._h, self._rst, 1)
             time.sleep(0.500)
 
     def _init(self):
