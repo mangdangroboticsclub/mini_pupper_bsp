@@ -10,7 +10,7 @@ then
 fi
 if [[ "${VERSION}" = "" ]];
 then
- VERSION=${COMMIT}-${DATA}
+ VERSION=${COMMIT}-${DATE}
 fi
 if [[ $(git status --porcelain|wc -l) > 0 ]];
 then

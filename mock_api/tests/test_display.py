@@ -1,6 +1,7 @@
 import filecmp
 import os
-import netifaces as ni
+import socket
+import psutil
 from MangDang.mini_pupper.display import Display, BehaviorState
 
 
@@ -33,16 +34,19 @@ def test_show_ip():
     os.system("rm -f /tmp/Display.log")
     disp = Display()
     disp.show_ip()
-    if 'wlan0' in ni.interfaces() and ni.AF_INET in ni.ifaddresses('wlan0').keys():
-        ip = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+    addrs = psutil.net_if_addrs()
+    wlan0_ipv4 = next((addr.address for addr in addrs.get('wlan0', []) if addr.family == socket.AF_INET), None)
+    eth0_ipv4 = next((addr.address for addr in addrs.get('eth0', []) if addr.family == socket.AF_INET), None)
+    if wlan0_ipv4 is not None:
+        ip = wlan0_ipv4
         text = "IP: %s" % str(ip)
-        with open('/tmp/Display.exp'.log_file, 'w') as fh:
+        with open('/tmp/Display.exp', 'w') as fh:
             fh.write("%s\n" % text)
         assert filecmp.cmp('/tmp/Display.exp', '/tmp/Display.log')
-    elif 'eth0' in ni.interfaces() and ni.AF_INET in ni.ifaddresses('eth0').keys():
-        ip = ni.ifaddresses('eth0')[ni.AF_INET][0]['addr']
+    elif eth0_ipv4 is not None:
+        ip = eth0_ipv4
         text = "IP: %s" % str(ip)
-        with open('/tmp/Display.exp'.log_file, 'w') as fh:
+        with open('/tmp/Display.exp', 'w') as fh:
             fh.write("%s\n" % text)
         assert filecmp.cmp('/tmp/Display.exp', '/tmp/Display.log')
     else:

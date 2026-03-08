@@ -63,7 +63,7 @@ echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selecti
 if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
     sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 fi
-# W1: mpg123 is the binary called by rc.local / battery_monitor / test.sh;
+# mpg123 is the binary called by rc.local / battery_monitor / test.sh;
 #     mpg321 installs a different binary name and must not be used here.
 sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
 if [ -f /etc/libao.conf ]; then
@@ -130,7 +130,7 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
-# W8: The nvram device address differs between Ubuntu versions; patch for both.
+# The nvram device address differs between Ubuntu versions; patch for both.
 # TODO: Physically verify the correct nvmem path (3-00500 vs 3-00501) on
 #       Ubuntu 24.04 Noble hardware before relying on this patch in production.
 if [ "$UBUNTU_CODENAME" == "jammy" ] || [ "$UBUNTU_CODENAME" == "noble" ]; then
@@ -146,7 +146,7 @@ getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
-# W4: Two rules cover both Pi 4 (pinctrl-bcm2711) and Pi 5 (pinctrl-rp1).
+# Two rules cover both Pi 4 (pinctrl-bcm2711) and Pi 5 (pinctrl-rp1).
 sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-rp1", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
@@ -173,7 +173,7 @@ sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
 sudo tee /usr/lib/udev/gpio-mini_pupper.sh << 'EOF' > /dev/null
 #!/bin/bash
-# S4 TODO: The sysfs GPIO ABI (/sys/class/gpio/) is formally deprecated in
+# TODO: The sysfs GPIO ABI (/sys/class/gpio/) is formally deprecated in
 # kernel 6.8 and is scheduled for removal in a future kernel release.
 # This script should be migrated to use the libgpiod character device API
 # (lgpio / python3-gpiod) in a future update to avoid breakage on kernel

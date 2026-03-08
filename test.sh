@@ -38,7 +38,7 @@ check_result "Did you hear a sound"
 if [ $(lsb_release -cs) == "jammy" ]; then
     hexdump /sys/bus/nvmem/devices/3-00501/nvmem
 else
-    hexdump /sys/bus/nvmem/devices/3-00500/nvmem
+    hexdump /sys/bus/nvmem/devices/3-00501/nvmem
 fi
 
 check_result "Did you see a hex dump"
@@ -54,13 +54,17 @@ echo 2000000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 check_result "Did you see a leg moving"
 
 ### Reset servo
+# Kernel 6.8+ on Ubuntu 24.04 uses GPIO base offset 512; detect dynamically.
+GPIO_BASE=0
+[ -d /sys/class/gpio/gpiochip512 ] && GPIO_BASE=512
+
 echo 0 > /sys/class/pwm/pwmchip0/pwm4/enable
-echo 0 > /sys/class/gpio/gpio21/value
-echo 0 > /sys/class/gpio/gpio25/value
+echo 0 > /sys/class/gpio/gpio$((GPIO_BASE + 21))/value
+echo 0 > /sys/class/gpio/gpio$((GPIO_BASE + 25))/value
 sleep 1
 echo 1 > /sys/class/pwm/pwmchip0/pwm4/enable
-echo 1 > /sys/class/gpio/gpio21/value
-echo 1 > /sys/class/gpio/gpio25/value
+echo 1 > /sys/class/gpio/gpio$((GPIO_BASE + 21))/value
+echo 1 > /sys/class/gpio/gpio$((GPIO_BASE + 25))/value
 
 echo "Your base installation looks OK"
 echo "You may now proceed to calibrate mini pupper"

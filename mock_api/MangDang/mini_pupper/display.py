@@ -1,4 +1,5 @@
-import netifaces as ni
+import socket
+import psutil
 from enum import Enum
 
 
@@ -38,15 +39,15 @@ class Display:
             fh.write("%s\n" % image_path)
 
     def show_ip(self):
-        try:
-            if ni.AF_INET in ni.ifaddresses('wlan0').keys():
-                ip = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
-            elif ni.AF_INET in ni.ifaddresses('eth0').keys():
-                ip = ni.ifaddresses('eth0')[ni.AF_INET][0]['addr']
-            else:
-                ip = 'no IPv4 address found'
-        except:
-            ip = 'no IPv4 address found'
+        ip = 'no IPv4 address found'
+        addrs = psutil.net_if_addrs()
+        for iface in ('wlan0', 'eth0'):
+            for addr in addrs.get(iface, []):
+                if addr.family == socket.AF_INET:
+                    ip = addr.address
+                    break
+            if ip != 'no IPv4 address found':
+                break
         text = "IP: %s" % str(ip)
         with open(self.log_file, 'a') as fh:
             fh.write("%s\n" % text)

@@ -7,7 +7,7 @@ This document describes the changes made to convert the Mini Pupper 1 BSP from R
 | Feature | Mini Pupper 1 | Mini Pupper 2 |
 |---------|---------------|---------------|
 | Servo Protocol | Serial PWM (Lewansoul) | I2C PWM (PCA9685) |
-| Display | OLED | LCD |
+| Display | ST7789 TFT LCD (320x240, SPI) | LCD |
 | Camera | RPi Camera | RPi Camera |
 | Audio | Speaker | Speaker |
 | Battery Gauge | BQ25895 | BQ25895 |
@@ -81,9 +81,11 @@ fi
 
 ### Install Steps
 
+Use `setup_jazzy.sh` for Ubuntu 24.04 Noble. The lower-level `install.sh` entry point is for Ubuntu 22.04 Jammy.
+
 ```bash
 cd ~/mini_pupper_bsp
-./install.sh
+./setup_jazzy.sh
 sudo reboot
 ```
 
@@ -128,8 +130,10 @@ libcamera-hello
 # Check audio device
 aplay -l
 
-# Set default audio device
-sudo raspi-config  # Advanced Options > Audio
+# Set the default ALSA device in /etc/asound.conf
+# Example:
+# defaults.pcm.card 0
+# defaults.ctl.card 0
 ```
 
 ### Servo Not Responding

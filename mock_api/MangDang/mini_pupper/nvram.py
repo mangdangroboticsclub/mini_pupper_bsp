@@ -16,4 +16,7 @@ def read():
 
 def delete():
     "this call only exist in mock_api for testing"
-    os.system("rm -f ServoCalibrationFilePath")
+    try:
+        os.unlink(ServoCalibrationFilePath)
+    except FileNotFoundError:
+        pass

@@ -15,9 +15,12 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 UBUNTU_CODENAME=$(lsb_release -cs)
 echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
 
-# Update and upgrade the system
+# Update the package index.
+# NOTE: Run 'sudo apt update && sudo apt upgrade' manually before running
+# this script to ensure system packages are up to date. Performing a full
+# upgrade here risks changing the running kernel mid-install, which would
+# invalidate DKMS modules built in earlier setup steps.
 sudo apt update
-sudo apt upgrade -y
 
 # Install v4l2, a video capture utility
 sudo apt install -y v4l-utils

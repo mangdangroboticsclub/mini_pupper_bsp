@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0+
+/* Retained for reference only; no current install script uses this 20.04 driver. */
 /*
  * at24.c - handle most I2C EEPROMs
  *
