@@ -26,8 +26,8 @@ then
 else
     echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh 2>/dev/null || echo 'none')\" >> ~/mini-pupper-release
 fi
-echo BSP_VERSION=\"$(cd ~/mini_pupper_bsp; ./get-version.sh)\" >> ~/mini-pupper-release
-cd ~/mini_pupper_bsp
+echo BSP_VERSION=\"$(cd $BASEDIR; ./get-version.sh)\" >> ~/mini-pupper-release
+cd $BASEDIR
 TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1 2>/dev/null || true)
 TAG=$(git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 BSP_VERSION=$(./get-version.sh)
@@ -130,10 +130,9 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
-# The nvram device address differs between Ubuntu versions; patch for both.
-# TODO: Physically verify the correct nvmem path (3-00500 vs 3-00501) on
-#       Ubuntu 24.04 Noble hardware before relying on this patch in production.
-if [ "$UBUNTU_CODENAME" == "jammy" ] || [ "$UBUNTU_CODENAME" == "noble" ]; then
+# On Ubuntu 24.04 Noble, rmem0 is already registered in the nvmem subsystem,
+# so the EEPROM provider created from I2C device 3-0050 becomes 3-00501.
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
     sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
@@ -220,4 +219,3 @@ if ! grep -q "mpg123 -a" /etc/rc.local; then
     sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
 fi
 
-grep -q 'alias esp32-cli' ~/.bashrc || echo 'alias esp32-cli="screen /dev/ttyUSB0 115200"' >> ~/.bashrc

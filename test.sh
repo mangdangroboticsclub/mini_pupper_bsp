@@ -36,7 +36,7 @@ check_result "Did you hear a sound"
 
 ### Test EEPROM driver
 if [ $(lsb_release -cs) == "jammy" ]; then
-    hexdump /sys/bus/nvmem/devices/3-00501/nvmem
+    hexdump /sys/bus/nvmem/devices/3-00500/nvmem
 else
     hexdump /sys/bus/nvmem/devices/3-00501/nvmem
 fi

@@ -22,6 +22,13 @@ if [ "$UBUNTU_CODENAME" != "noble" ]; then
     exit 1
 fi
 
+if [ "$(uname -m)" != "aarch64" ]; then
+    echo "ERROR: setup_jazzy.sh is for ARM hardware only."
+    echo "       Detected architecture: '$(uname -m)'"
+    echo "       This script should only be run on a Mini Pupper ARM system."
+    exit 0
+fi
+
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║   Mini Pupper 1 BSP — ROS 2 Jazzy / Ubuntu 24.04 Setup      ║"
@@ -47,21 +54,8 @@ run_step() {
 
 # Main BSP install: Python modules, DKMS drivers, pip deps, udev rules, audio.
 # This also runs IO_Configuration, FuelGauge, System, EEPROM, and PWMController
-# internally for ARM hardware, so those steps below are explicit re-runs for
-# clarity and standalone use.
+# internally for ARM hardware.
 run_step "Main BSP install" "$BASEDIR/install.sh"
-
-# IO_Configuration: copies ubuntu_24.04/config.txt with all required dt-overlays.
-run_step "IO_Configuration" "$BASEDIR/IO_Configuration/install.sh"
-
-# FuelGauge: installs max1720x_battery DKMS module and battery_monitor service.
-run_step "FuelGauge" "$BASEDIR/FuelGauge/install.sh"
-
-# System: installs rc-local.service, sudoers, auto-upgrade policy.
-run_step "System" "$BASEDIR/System/install.sh"
-
-# PWMController: compiles and installs the PCA9685 PWM DT overlay.
-run_step "PWMController" "$BASEDIR/PWMController/install.sh"
 
 # RPiCamera: configures libcamera (Noble) or legacy stack (Jammy).
 run_step "RPiCamera" "$BASEDIR/RPiCamera/install.sh"
