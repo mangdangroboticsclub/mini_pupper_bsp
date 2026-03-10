@@ -1,6 +1,5 @@
 [Unit]
 Description=max17205 battery monitor service
-After=network.target
 
 [Service]
 Type=oneshot

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 from MangDang.mini_pupper.capabilities import Capabilities
 
 mp = Capabilities()
