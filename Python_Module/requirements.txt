@@ -3,5 +3,3 @@ lgpio
 numpy
 spidev
 psutil
-sounddevice
-soundfile

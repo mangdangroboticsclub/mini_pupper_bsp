@@ -16,5 +16,5 @@ try:
     data = nvram.read()
     MICROS_PER_RAD = data['MICROS_PER_RAD']
     NEUTRAL_ANGLE_DEGREES = data['NEUTRAL_ANGLE_DEGREES']
-except:
+except Exception:
     pass

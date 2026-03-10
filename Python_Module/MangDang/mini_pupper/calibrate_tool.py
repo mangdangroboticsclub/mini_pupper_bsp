@@ -150,7 +150,7 @@ class CalibrationTool:
             self.MICROS_PER_RAD = data['MICROS_PER_RAD']
             self.Matrix_EEPROM = data['NEUTRAL_ANGLE_DEGREES']
             print("Get nv calibration params: \n" , self.Matrix_EEPROM)
-        except:
+        except Exception:
             matrix = np.array([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
             self.Matrix_EEPROM = matrix
         #update
@@ -315,7 +315,7 @@ def main():
     try:
         _thread.start_new_thread( updateServoValue, ( MainWindow, hardware_interface,) )
     
-    except:
+    except Exception:
         print ('Thread Error')
        
     MainWindow.runMainWindow()

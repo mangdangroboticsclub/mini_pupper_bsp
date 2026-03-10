@@ -37,7 +37,7 @@ Many thanks for hdumcke and Tiryoh's great support for this repository.
 Main changes compared to Mini Pupper original basic Ubuntu version repository:
 
 - contains only the code required to get the hardware API installed
-- installs on a clean Ubuntu 20.04 Server or Ubuntu 22.04 Desktop or Server for Raspberry Pi
+- installs on a clean Ubuntu 20.04 Server or Ubuntu 22.04 / 24.04 Desktop or Server for Raspberry Pi
 - Python code is installed as a Python module
 - no root priviledges required to drive any robot API
 - make "calibrate" a system command
