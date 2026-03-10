@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Install FuelGauge driver and battery monitor daemon
 #
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # The command script to init system for mini pupper 
 set -x
 sudo cp 20auto-upgrades /etc/apt/apt.conf.d/

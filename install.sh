@@ -99,7 +99,7 @@ if [ "$UBUNTU_CODENAME" == "jammy" ]; then
 fi
 
 cd /tmp
-wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py $PIP_BREAK
 sudo pip install $PIP_BREAK setuptools lgpio
 sudo pip install $PIP_BREAK sounddevice soundfile

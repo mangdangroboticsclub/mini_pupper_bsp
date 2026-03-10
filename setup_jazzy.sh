@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 #
 # setup_jazzy.sh — One-shot setup for Mini Pupper 1 BSP on ROS 2 Jazzy / Ubuntu 24.04.
 #

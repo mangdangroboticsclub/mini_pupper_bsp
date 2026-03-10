@@ -35,7 +35,7 @@ mpg123 $BASEDIR/Audio/power_on.mp3
 check_result "Did you hear a sound"
 
 ### Test EEPROM driver
-UBUNTU_CODENAME=${UBUNTU_CODENAME:-$(lsb_release -cs)}
+UBUNTU_CODENAME=${UBUNTU_CODENAME:-$UBUNTU_CODENAME}
 
 if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     hexdump /sys/bus/nvmem/devices/3-00500/nvmem
