@@ -1,6 +1,5 @@
 from MangDang.mini_pupper.Config import ServoParams, PWMParams
 import numpy as np
-import math
 
 class JointChecker:
     """
@@ -8,9 +7,9 @@ class JointChecker:
     Future implementation: can dynamic contraints for velocity/acceleration
     """
     def __init__(self):
-        self.cnt_c1 = 0 
-        self.cnt_c2 = 0 
-        self.cnt_c3 = 0 
+        self.cnt_c1 = 0
+        self.cnt_c2 = 0
+        self.cnt_c3 = 0
         self._joint_max_lim_deg = np.array([
             [55, -55, 55, -55],  # Motor1: abduction
             [-108, -108, -108, -108],  # Motor2: Hip
@@ -31,12 +30,12 @@ class JointChecker:
         Check and make sure the joint angles are within limit specified.
         """
         # Constraints 1: Static constraints of each motor range
-        clipped_angles = np.clip(joint_angles, self.lower_bound, self.upper_bound) 
+        clipped_angles = np.clip(joint_angles, self.lower_bound, self.upper_bound)
         n_clipped_motor = np.sum(clipped_angles != joint_angles)
         self.cnt_c1 += n_clipped_motor
 
         # Constraints 2: Dynamic coupling of Motor 2 and 3 (Motor 2 max <= Motor 3 + 194°)
-        motor2_angles = clipped_angles[1, :] # Use the already clipped angles as the base
+        motor2_angles = clipped_angles[1, :]  # Use the already clipped angles as the base
         motor3_angles = clipped_angles[2, :]
         motor2_max = motor3_angles + np.deg2rad(194)
         clipped_angles_c2 = np.minimum(motor2_angles, motor2_max)
@@ -58,19 +57,12 @@ class JointChecker:
     @property
     def joint_max_lim(self):
         return self._joint_max_lim
+
     @property
     def joint_min_lim(self):
         return self._joint_min_lim
 
 class HardwareInterface:
-    """Hardware layer for commanding servo joints.
-
-    By default, joint limits are enabled and all multi-joint commands
-    are passed through JointChecker to enforce static and dynamic
-    constraints. Single-joint commands are provided as a lower-level
-    interface and do not perform any safety checks.
-    """
-
     def __init__(self, joint_checker_flag=True):
         self.pwm_params = PWMParams()
         self.servo_params = ServoParams()
@@ -82,24 +74,12 @@ class HardwareInterface:
             print("Joint limits not initialized.")
 
     def set_actuator_postions(self, joint_angles):
-        """Set all joint angles (3x4) for the four legs.
-
-        When ENABLE_JOINT_LIMITS is True, the joint_angles matrix is
-        first passed through JointChecker.check_limit().
-        This is the recommended, safety-aware API.
-        """
         if self.ENABLE_JOINT_LIMITS:
             send_servo_commands(self.pwm_params, self.servo_params, self.joint_checker.check_limit(joint_angles))
         else:
             send_servo_commands(self.pwm_params, self.servo_params, joint_angles)
 
     def set_actuator_position(self, joint_angle, axis, leg):
-        """Command a single joint on a single leg with no limit checks.
-
-        This API bypasses JointChecker and does not enforce static or dynamic joint constraints. 
-        It should only be used for advanced tasks such as calibration or debugging.
-        For normal operation, prefer set_actuator_postions().
-        """
         send_servo_command(self.pwm_params, self.servo_params, joint_angle, axis, leg)
 
 
@@ -176,15 +156,15 @@ def send_servo_commands(pwm_params, servo_params, joint_angles):
             )
             # write duty_cycle to pwm linux kernel node
             file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis_index, leg_index]) + "/duty_cycle"
-            f = open(file_node, "w")
-            f.write(str(duty_cycle))
+            with open(file_node, "w") as f:
+                f.write(str(duty_cycle))
 
 
 def send_servo_command(pwm_params, servo_params, joint_angle, axis, leg):
     duty_cycle = angle_to_duty_cycle(joint_angle, pwm_params, servo_params, axis, leg)
     file_node = "/sys/class/pwm/pwmchip0/pwm" + str(pwm_params.pins[axis, leg]) + "/duty_cycle"
-    f = open(file_node, "w")
-    f.write(str(duty_cycle))
+    with open(file_node, "w") as f:
+        f.write(str(duty_cycle))
 
 
 def deactivate_servos(pi, pwm_params):

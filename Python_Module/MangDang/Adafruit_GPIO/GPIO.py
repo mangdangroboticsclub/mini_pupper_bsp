@@ -414,8 +414,9 @@ def get_platform_gpio(**keywords):
     """
     plat = Platform.platform_detect()
     if plat == Platform.RASPBERRY_PI:
-        import RPi.GPIO
-        return RPiGPIOAdapter(RPi.GPIO, **keywords)
+        # RPi.GPIO is not supported on Ubuntu 24.04 Noble / kernel 6.8.
+        # Use lgpio directly via the ST7789 driver instead of this adapter path.
+        raise NotImplementedError('RPi.GPIO is not supported on Ubuntu 24.04 Noble / kernel 6.8; use lgpio directly.')
     elif plat == Platform.BEAGLEBONE_BLACK:
         import Adafruit_BBIO.GPIO
         return AdafruitBBIOAdapter(Adafruit_BBIO.GPIO, **keywords)

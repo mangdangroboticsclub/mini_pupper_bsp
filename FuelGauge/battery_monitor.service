@@ -8,4 +8,4 @@ ExecStart=/usr/bin/battery_monitor
 User=root
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=multi-user.target

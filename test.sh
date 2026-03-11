@@ -31,7 +31,7 @@ python test.py
 check_result "Do you see the dog on the LCD diplay"
 
 ### Test audio
-mpg123 $BASEDIR/Audio/power_on.mp3
+mpg123 -a hw:00,00 $BASEDIR/Audio/power_on.mp3
 check_result "Did you hear a sound"
 
 ### Test EEPROM driver
