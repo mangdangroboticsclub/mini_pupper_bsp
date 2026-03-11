@@ -102,7 +102,6 @@ cd /tmp
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py $PIP_BREAK
 sudo pip install $PIP_BREAK setuptools lgpio
-sudo pip install $PIP_BREAK sounddevice soundfile
 
 ### Install Python module
 sudo apt install -y python3-dev
