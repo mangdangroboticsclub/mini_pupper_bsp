@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 #
 # setup_jazzy.sh — One-shot setup for Mini Pupper 1 BSP on ROS 2 Jazzy / Ubuntu 24.04.
 #
@@ -10,7 +9,6 @@ set -e
 #
 # The script is safe to re-run; each sub-installer is idempotent.
 
-set -e
 
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 

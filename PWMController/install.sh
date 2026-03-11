@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-set -e
 # Install pca9685 driver
 #
 

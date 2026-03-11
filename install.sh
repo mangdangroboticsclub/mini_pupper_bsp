@@ -145,10 +145,9 @@ getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
-# Two rules cover both Pi 4 (pinctrl-bcm2711) and Pi 5 (pinctrl-rp1).
+# Pi 4 udev rule (pinctrl-bcm2711)
 sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
-KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-rp1", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
 EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-nvmem.rules << EOF > /dev/null
