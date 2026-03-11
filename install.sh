@@ -63,6 +63,34 @@ echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selecti
 if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
     sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 fi
+
+# Fix package dependency issues for Ubuntu 24.04 (Noble)
+# Some systems may have security-updated versions that conflict with repository versions
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    echo "Fixing potential package version conflicts for Ubuntu 24.04..."
+    sudo apt clean
+    sudo apt --fix-broken install -y || true
+    
+    # Check if libbz2-1.0 and zlib1g need downgrade to match repository versions
+    # This prevents "unmet dependencies" errors when installing build-essential
+    LIBBZ2_INSTALLED=$(dpkg -l libbz2-1.0 2>/dev/null | grep "^ii" | awk '{print $3}' || echo "")
+    ZLIB1G_INSTALLED=$(dpkg -l zlib1g 2>/dev/null | grep "^ii" | awk '{print $3}' || echo "")
+    
+    if [ -n "$LIBBZ2_INSTALLED" ] && [ "$LIBBZ2_INSTALLED" != "1.0.8-5.1" ]; then
+        echo "Downgrading libbz2-1.0 to repository version..."
+        sudo apt install --allow-downgrades -y libbz2-1.0=1.0.8-5.1 || true
+    fi
+    
+    if [ -n "$ZLIB1G_INSTALLED" ] && [ "$ZLIB1G_INSTALLED" != "1:1.3.dfsg-3.1ubuntu2" ]; then
+        echo "Downgrading zlib1g to repository version..."
+        sudo apt install --allow-downgrades -y zlib1g=1:1.3.dfsg-3.1ubuntu2 || true
+    fi
+    
+    # Install bzip2 and zlib1g-dev with specific versions to avoid conflicts
+    sudo apt install -y bzip2=1.0.8-5.1 zlib1g-dev=1:1.3.dfsg-3.1ubuntu2 || \
+    sudo apt install -y bzip2 zlib1g-dev
+fi
+
 # mpg123 is the binary called by rc.local / battery_monitor / test.sh;
 #     mpg321 installs a different binary name and must not be used here.
 # Install build tools and Python dependencies first (needed for DKMS and pip installs)
