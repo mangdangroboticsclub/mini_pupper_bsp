@@ -316,7 +316,7 @@ def main():
         _thread.start_new_thread( updateServoValue, ( MainWindow, hardware_interface,) )
     
     except Exception:
-        print ('Thread Error')
+        print('Thread Error')
        
     MainWindow.runMainWindow()
     MainWindow.stopMainWindow()
