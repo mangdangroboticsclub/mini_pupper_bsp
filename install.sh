@@ -65,7 +65,9 @@ if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
 fi
 # mpg123 is the binary called by rc.local / battery_monitor / test.sh;
 #     mpg321 installs a different binary name and must not be used here.
-sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
+# Install build tools and Python dependencies first (needed for DKMS and pip installs)
+sudo apt install -y build-essential python3-pip python3-dev
+sudo apt install -y i2c-tools curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
 if [ -f /etc/libao.conf ]; then
     sudo sed -i "s/pulse/alsa/" /etc/libao.conf
 fi
@@ -77,13 +79,22 @@ fi
 sudo rm -rf /var/lib/mini_pupper_bsp
 sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
 
+### Install kernel headers for DKMS module compilation
+KERNEL_VERSION=$(uname -r)
+sudo apt install -y linux-headers-${KERNEL_VERSION} || echo "Warning: Could not install exact kernel headers, trying generic..."
+if ! dpkg -l | grep -q "linux-headers-${KERNEL_VERSION}"; then
+    # Try to install generic raspi headers if exact version not available
+    sudo apt install -y linux-headers-raspi || true
+fi
+
 ### Install system components
 $BASEDIR/prepare_dkms.sh
 if [ "$MACHINE" == "x86_64" ]
 then
     COMPONENTS=(System)
 else
-    COMPONENTS=(IO_Configuration FuelGauge System EEPROM PWMController)
+    # FuelGauge removed - battery monitoring not needed
+    COMPONENTS=(IO_Configuration System EEPROM PWMController)
 fi
 for dir in ${COMPONENTS[@]}; do
     cd $BASEDIR/$dir
@@ -102,10 +113,10 @@ cd /tmp
 # Skip pip upgrade to avoid conflicts with system-managed pip
 # wget https://bootstrap.pypa.io/get-pip.py
 # sudo python get-pip.py $PIP_BREAK || true
-sudo pip install $PIP_BREAK setuptools lgpio
+sudo pip3 install $PIP_BREAK setuptools lgpio
 
 ### Install Python module
-sudo apt install -y python3-dev
+# python3-dev already installed above
 sudo git config --global --add safe.directory $BASEDIR
 if [ "$MACHINE" == "x86_64" ]
 then
@@ -117,7 +128,7 @@ if [ "$IS_RELEASE" == "YES" ]
 then
     sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 else
-    sudo pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
+    sudo pip3 install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 fi
 
 ### Do the rest of the installation only on a physical mini pupper
@@ -127,7 +138,8 @@ then
 fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
-sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
+# battery_monitor removed - FuelGauge component not installed
+# sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
 # On Ubuntu 24.04 Noble, rmem0 is already registered in the nvmem subsystem,
@@ -209,7 +221,8 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ### Fix audio device
 AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
-for f in test.sh FuelGauge/battery_monitor System/rc.local; do
+# FuelGauge/battery_monitor removed - component not installed
+for f in test.sh System/rc.local; do
     if ! grep -q "mpg123 -a" $BASEDIR/$f; then
         sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
     fi
