@@ -170,10 +170,10 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 # sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
-# On Ubuntu 24.04 Noble, rmem0 is already registered in the nvmem subsystem,
-# so the EEPROM provider created from I2C device 3-0050 becomes 3-00501.
+# On Ubuntu 24.04 Noble, rmem0 and rmem1 are already registered in the nvmem subsystem,
+# so the EEPROM provider created from I2C device 3-0050 becomes 3-00502.
 if [ "$UBUNTU_CODENAME" == "noble" ]; then
-    sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
+    sudo sed -i "s/3-00500/3-00502/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
 ### Make pwm sysfs and nvmem work for non-root users
@@ -193,6 +193,7 @@ EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-nvmem.rules << EOF > /dev/null
 KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
 KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
+KERNEL=="3-00502", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00502/nvmem"
 EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-spi.rules << EOF > /dev/null
 KERNEL=="spidev0.0", OWNER="root", GROUP="spi", MODE="0660"
