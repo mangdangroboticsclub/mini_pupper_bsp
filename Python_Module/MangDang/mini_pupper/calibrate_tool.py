@@ -1,10 +1,8 @@
-import re
 import tkinter as tk
 import tkinter.messagebox
 from tkinter import *
 import _thread
 import time
-import os
 import sys
 
 import numpy as np
@@ -262,17 +260,6 @@ class CalibrationTool:
             print(angle[2])
             print('******************************')
             sys.exit()
-            
-            for i in range(3):
-                for j in range(4):
-                    self.NocalibrationServoAngle[i][j] = angle[i][j]
-                    self.CalibrationServoAngle[i][j] = angle[i][j]
-            value = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
-            for i in range(3):
-                for j in range(4):
-                    value[j][i] = self.ServoStandardLAngle[i][j]
-            
-        self.setLegSlidersValue(value)
         
         return True
 
