@@ -2,7 +2,7 @@
 #
 # This script configures a Raspberry Pi for use with a camera module.
 # Version: 1.2 (Jazzy compatible)
-# Date: 2024-03-01
+# Date: 2026-03-01
 
 # Exit the script immediately if a command exits with a non-zero status
 # set -x
