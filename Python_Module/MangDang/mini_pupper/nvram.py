@@ -28,10 +28,13 @@ _NVMEM_PATH = _detect_nvmem_path()
 _FALLBACK_PATH = os.path.expanduser('~/.config/mini_pupper_bsp/servo_calibration.pkl')
 
 
+import warnings
+
 def _active_path():
     """Return the hardware EEPROM path if it exists, else the file fallback."""
     if _NVMEM_PATH is not None and os.path.exists(_NVMEM_PATH):
         return _NVMEM_PATH
+    warnings.warn("No EEPROM nvmem device found — using file fallback at " + _FALLBACK_PATH)
     return _FALLBACK_PATH
 
 
