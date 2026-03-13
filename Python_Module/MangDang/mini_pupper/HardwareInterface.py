@@ -160,8 +160,6 @@ def angle_to_duty_cycle(angle, pwm_params, servo_params, axis_index, leg_index):
     return int(duty_cycle_f)
 
 
-def initialize_pwm(pi, pwm_params):
-    pi.set_pwm_freq(pwm_params.freq)
 
 
 def send_servo_commands(pwm_params, servo_params, joint_angles):
@@ -187,7 +185,3 @@ def send_servo_command(pwm_params, servo_params, joint_angle, axis, leg):
         f.write(str(duty_cycle))
 
 
-def deactivate_servos(pi, pwm_params):
-    for leg_index in range(4):
-        for axis_index in range(3):
-            pi.set_pwm(pwm_params.pins[axis_index, leg_index], 0, 0)
