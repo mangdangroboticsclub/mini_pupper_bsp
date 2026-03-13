@@ -378,8 +378,8 @@ static int pca9685_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
 			 struct pwm_state *state)
 #else
 static void pca9685_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
-			  struct pwm_state *state)
-#endif
+				  struct pwm_state *state)
+				  #endif
 {
 	struct pca9685 *pca = to_pca(chip);
 	unsigned long long duty;

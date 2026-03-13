@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -154,7 +155,7 @@ fi
 ### Do the rest of the installation only on a physical mini pupper
 if [ "$MACHINE" == "x86_64" ]
 then
-    exit
+    exit 
 fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
@@ -242,4 +243,3 @@ done
 if ! grep -q "mpg123 -a" /etc/rc.local; then
     sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
 fi
-
