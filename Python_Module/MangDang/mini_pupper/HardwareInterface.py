@@ -160,8 +160,6 @@ def angle_to_duty_cycle(angle, pwm_params, servo_params, axis_index, leg_index):
     return int(duty_cycle_f)
 
 
-
-
 def send_servo_commands(pwm_params, servo_params, joint_angles):
     for leg_index in range(4):
         for axis_index in range(3):
