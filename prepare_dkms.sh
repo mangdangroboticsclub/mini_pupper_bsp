@@ -22,7 +22,7 @@ else
     if [ "$UBUNTU_CODENAME" == "jammy" ]; then
         sudo cp ubuntu_22.04/* /usr/src/at24-1.0
     else
-        sudo cp ubuntu_24.04/* /usr/src/at24-1.0
+        sudo cp ubuntu_20.04/* /usr/src/at24-1.0
     fi
     sudo cp dkms.conf /usr/src/at24-1.0/
 

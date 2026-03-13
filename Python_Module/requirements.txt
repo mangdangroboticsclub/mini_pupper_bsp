@@ -1,5 +1,6 @@
 Pillow
-lgpio
+RPi.GPIO; python_version < '3.12'
+lgpio; python_version >= '3.12'
 numpy
 spidev
 psutil

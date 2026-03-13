@@ -131,9 +131,9 @@ done
 ### Install pip and Python dependencies
 # Ubuntu 24.04 enforces PEP 668 (externally-managed-environment),
 # so we need --break-system-packages for system-wide pip installs.
-PIP_BREAK="--break-system-packages"
-if [ "$UBUNTU_CODENAME" == "jammy" ]; then
-    PIP_BREAK=""
+PIP_BREAK=""
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    PIP_BREAK="--break-system-packages"
 fi
 
 cd /tmp

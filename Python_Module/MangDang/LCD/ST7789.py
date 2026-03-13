@@ -28,8 +28,12 @@ import time
 import numpy as np
 
 import spidev
-import lgpio
-
+try:
+    import lgpio
+    USE_LGPIO = True
+except ImportError:
+    import RPi.GPIO as GPIO
+    USE_LGPIO = False
 
 BG_SPI_CS_BACK = 0
 BG_SPI_CS_FRONT = 1
@@ -120,10 +124,15 @@ class ST7789(object):
         if width != height and rotation in [90, 270]:
             raise ValueError("Invalid rotation {} for {}x{} resolution".format(rotation, width, height))
 
-        # Open gpiochip0 — the BCM GPIO controller on Pi 4/5.
-        # lgpio uses BCM pin numbers directly via the character device;
-        # it is unaffected by the sysfs base-offset change in kernel 6.8+.
-        self._h = lgpio.gpiochip_open(0)
+        if USE_LGPIO:
+            # Open gpiochip0 — the BCM GPIO controller on Pi 4/5.
+            # lgpio uses BCM pin numbers directly via the character device;
+            # it is unaffected by the sysfs base-offset change in kernel 6.8+.
+            self._h = lgpio.gpiochip_open(0)
+        else:
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            self._h = None
 
         self._spi = spidev.SpiDev(port, cs)
         self._spi.mode = 0
@@ -141,27 +150,40 @@ class ST7789(object):
         self._offset_top = offset_top
 
         # Set DC as output.
-        lgpio.gpio_claim_output(self._h, dc)
+        self._gpio_setup(dc)
 
         # Setup backlight as output (if provided).
         self._backlight = backlight
         if backlight is not None:
-            lgpio.gpio_claim_output(self._h, backlight)
-            lgpio.gpio_write(self._h, backlight, 0)
+            self._gpio_setup(backlight)
+            self._gpio_out(backlight, 0)
             time.sleep(0.1)
-            lgpio.gpio_write(self._h, backlight, 1)
+            self._gpio_out(backlight, 1)
 
         # Setup reset as output (if provided).
         if rst is not None:
-            lgpio.gpio_claim_output(self._h, self._rst)
+            self._gpio_setup(self._rst)
             self.reset()
         self._init()
 
+    def _gpio_setup(self, pin):
+        if USE_LGPIO:
+            lgpio.gpio_claim_output(self._h, pin)
+        else:
+            GPIO.setup(pin, GPIO.OUT)
+
+    def _gpio_out(self, pin, value):
+        if USE_LGPIO:
+            lgpio.gpio_write(self._h, pin, int(bool(value)))
+        else:
+            GPIO.output(pin, value)
+
     def __del__(self):
-        try:
-            lgpio.gpiochip_close(self._h)
-        except Exception:
-            pass
+        if USE_LGPIO:
+            try:
+                lgpio.gpiochip_close(self._h)
+            except Exception:
+                pass
 
     def send(self, data, is_data=True, chunk_size=4096):
         """Write a byte or array of bytes to the display. Is_data parameter
@@ -170,7 +192,7 @@ class ST7789(object):
         single SPI transaction, with a default of 4096.
         """
         # Set DC low for command, high for data.
-        lgpio.gpio_write(self._h, self._dc, int(is_data))
+        self._gpio_out(self._dc, is_data)
         # Convert scalar argument to list so either can be passed as parameter.
         if isinstance(data, numbers.Number):
             data = [data & 0xFF]
@@ -182,7 +204,7 @@ class ST7789(object):
     def set_backlight(self, value):
         """Set the backlight on/off."""
         if self._backlight is not None:
-            lgpio.gpio_write(self._h, self._backlight, int(bool(value)))
+            self._gpio_out(self._backlight, value)
 
     @property
     def width(self):
@@ -203,11 +225,11 @@ class ST7789(object):
     def reset(self):
         """Reset the display, if reset pin is connected."""
         if self._rst is not None:
-            lgpio.gpio_write(self._h, self._rst, 1)
+            self._gpio_out(self._rst, 1)
             time.sleep(0.500)
-            lgpio.gpio_write(self._h, self._rst, 0)
+            self._gpio_out(self._rst, 0)
             time.sleep(0.500)
-            lgpio.gpio_write(self._h, self._rst, 1)
+            self._gpio_out(self._rst, 1)
             time.sleep(0.500)
 
     def _init(self):
