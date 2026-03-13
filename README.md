@@ -49,13 +49,13 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 If you are installing this BSP for ROS 2 Jazzy on Ubuntu 24.04 Noble, use the Noble-specific setup path below.
 
 * Flash the Ubuntu 24.04 Noble preinstalled server image for Raspberry Pi from the official Ubuntu Raspberry Pi download page: https://ubuntu.com/download/raspberry-pi
-* Clone this repository and run `./setup_jazzy.sh` instead of `./install.sh`
+* Clone this repository and run `./install.sh`
 
 ```sh
 cd ~
 git clone https://github.com/mangdangroboticsclub/mini_pupper_bsp.git
 cd mini_pupper_bsp
-./setup_jazzy.sh
+./install.sh
 sudo reboot
 ```
 
