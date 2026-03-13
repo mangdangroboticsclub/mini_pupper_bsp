@@ -118,11 +118,6 @@ fi
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
-### Patch path to nvram device node
-if [ "$UBUNTU_CODENAME" == "noble" ]; then
-    sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
-fi
-
 ### Make pwm sysfs and nvmem work for non-root users
 ### reference: https://github.com/raspberrypi/linux/issues/1983
 ### reference: https://github.com/bitula/mini_pupper-dev/blob/main/scripts/mini_pupper.sh
