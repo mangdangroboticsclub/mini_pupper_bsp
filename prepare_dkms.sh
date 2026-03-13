@@ -29,18 +29,22 @@ sudo apt-get install -y dkms
 # sudo dkms install -m max1720x_battery -v 1.0
 
 cd $BASEDIR/EEPROM
-sudo mkdir -p /usr/src/at24-1.0
-sudo cp Makefile /usr/src/at24-1.0
-if [ "$UBUNTU_CODENAME" == "jammy" ]; then
-    sudo cp ubuntu_22.04/* /usr/src/at24-1.0
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    echo "Skipping EEPROM at24 DKMS on Ubuntu 24.04; using kernel built-in at24 driver"
 else
-    sudo cp ubuntu_24.04/* /usr/src/at24-1.0
-fi
-sudo cp dkms.conf /usr/src/at24-1.0/
+    sudo mkdir -p /usr/src/at24-1.0
+    sudo cp Makefile /usr/src/at24-1.0
+    if [ "$UBUNTU_CODENAME" == "jammy" ]; then
+        sudo cp ubuntu_22.04/* /usr/src/at24-1.0
+    else
+        sudo cp ubuntu_24.04/* /usr/src/at24-1.0
+    fi
+    sudo cp dkms.conf /usr/src/at24-1.0/
 
-sudo dkms add -m at24 -v 1.0
-sudo dkms build -m at24 -v 1.0
-sudo dkms install -m at24 -v 1.0
+    sudo dkms add -m at24 -v 1.0
+    sudo dkms build -m at24 -v 1.0
+    sudo dkms install -m at24 -v 1.0
+fi
 
 cd $BASEDIR/PWMController
 sudo mkdir -p /usr/src/pwm_pca9685-1.0
