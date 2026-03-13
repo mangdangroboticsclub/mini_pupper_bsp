@@ -1,13 +1,6 @@
 #!/bin/bash
 
 set -e
-
-sudo apt update
-# NOTE: Run 'sudo apt update && sudo apt upgrade' manually before running
-# this script to ensure system packages are up to date. Performing a full
-# upgrade here risks changing the running kernel mid-install, which would
-# invalidate DKMS modules built in the steps below.
-
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -210,13 +203,6 @@ sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
 sudo tee /usr/lib/udev/gpio-mini_pupper.sh << 'EOF' > /dev/null
 #!/bin/bash
-# TODO: The sysfs GPIO ABI (/sys/class/gpio/) is formally deprecated in
-# kernel 6.8 and is scheduled for removal in a future kernel release.
-# This script should be migrated to use the libgpiod character device API
-# (lgpio / python3-gpiod) in a future update to avoid breakage on kernel
-# upgrades beyond 6.8.
-
-# Detect GPIO base offset (kernel 6.8+ on Pi uses base 512 instead of 0)
 GPIO_BASE=0
 if [ -d /sys/class/gpio/gpiochip512 ]; then
     GPIO_BASE=512
