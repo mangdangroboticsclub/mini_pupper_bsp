@@ -1,0 +1,36 @@
+CHANGES
+=======
+* Port to ROS 2 Jazzy / Ubuntu 24.04 Noble: replace netifaces with psutil,
+  fix bare except clauses, fix os.system delete bug, update setup.cfg to
+  modern packages = find: syntax
+* rename minipupper to mini_pupper
+* unified name to mini_pupper
+* Display now shows IP address, added placeholder images for different states
+* adding shutdown and display API, work in progres
+* make script update_kernel_modules.sh callable from any directory
+* fixed typo
+* make battery_monitor executable
+* abstract nvram API
+* Fix servo reset
+* Fix pwm range
+* Avoid spi and gpiomem file permission error
+* Reset servo after test to turn torque off
+* Update README.md
+* Update .gitignore
+* Update README
+* Cleanup rc.local
+* Update Python_Modules to Python_Module
+* Update Python_Modules name to Python_Module, and add Unutu 22.04 Server support
+* Update README
+* Fix no sound error
+* Fix device file permission error
+* Add .gitignore
+* Remove unused argument validation
+* Fix file permission
+* Update based on first test
+* Update based on first test
+* Update README.md
+* Update baseline based on hdumcke's repo
+* Update README.md
+* Add the first version of mini pupper bsp
+* Initial commit
