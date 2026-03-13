@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # This script configures a Raspberry Pi for use with a camera module.
-# Version: 1.2 (Jazzy compatible)
-# Date: 2026-03-01
+# Version: 1.1
+# Date: 2023-04-10
 
 # Exit the script immediately if a command exits with a non-zero status
 # set -x
@@ -15,18 +15,11 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 UBUNTU_CODENAME=$(lsb_release -cs)
 echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
 
-# Update the package index.
-# NOTE: Run 'sudo apt update && sudo apt upgrade' manually before running
-# this script to ensure system packages are up to date. Performing a full
-# upgrade here risks changing the running kernel mid-install, which would
-# invalidate DKMS modules built in earlier setup steps.
 sudo apt update
 
 # Install v4l2, a video capture utility
 sudo apt install -y v4l-utils
 
-# Ubuntu 22.04 (Jammy) uses legacy camera configuration
-# Ubuntu 24.04+ (Noble+) uses libcamera natively
 if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     echo "Configuring legacy camera support for Ubuntu 22.04..."
     # Edit the /boot/firmware/config.txt file to enable camera support

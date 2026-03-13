@@ -48,16 +48,13 @@ class Display:
 
     def show_image(self, image_path):
         image = Image.open(image_path)
-        # resize() returns a new Image; assign back to avoid displaying unscaled image
         image = image.resize((320, 240))
         self.disp.display(image)
 
     def show_ip(self):
         image_path = "%s/%s" % (self.image_dir, self.state_to_image(BehaviorState.IP))
         image = Image.open(image_path)
-        # Assign the resized image before drawing text.
         image = image.resize((320, 240))
-        # Use psutil instead of the unmaintained netifaces package.
         ip = 'no IPv4 address found'
         addrs = psutil.net_if_addrs()
         for iface in ('wlan0', 'eth0'):

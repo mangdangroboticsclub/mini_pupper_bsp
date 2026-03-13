@@ -1,14 +1,7 @@
 import os
 import pickle
 
-# Hardware EEPROM path (AT24C08 on I2C bus 3).
-# NOTE: Requires the at24 kernel module to be loaded and the DT overlay to
-# instantiate the device. On Ubuntu 24.04 / kernel 6.8 this may not happen
-# automatically until the DKMS at24 module is rebuilt for kernel 6.8.
-#
-# The device path varies by kernel version:
-#   - Ubuntu 22.04 (Jammy): typically 3-00500
-#   - Ubuntu 24.04 (Noble): typically 3-00501 (rmem0 claims 3-00500)
+# EEPROM nvmem path: 3-00500 (Jammy) or 3-00501 (Noble)
 
 
 def _detect_nvmem_path():

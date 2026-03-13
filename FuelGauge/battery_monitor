@@ -9,7 +9,6 @@ while true
 do
 	current_voltage=`cat /sys/class/power_supply/max1720x_battery/voltage_now`
 	if [ $current_voltage -le 6500 ]; then
-		# Kernel 6.8+ (Ubuntu 24.04) uses GPIO base offset 512; detect dynamically
 		GPIO_BASE=0
 		[ -d /sys/class/gpio/gpiochip512 ] && GPIO_BASE=512
 		echo 0 > /sys/class/gpio/gpio$((GPIO_BASE + 25))/value

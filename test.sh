@@ -56,7 +56,6 @@ echo 2000000 > /sys/class/pwm/pwmchip0/pwm4/duty_cycle
 check_result "Did you see a leg moving"
 
 ### Reset servo
-# Kernel 6.8+ on Ubuntu 24.04 uses GPIO base offset 512; detect dynamically.
 GPIO_BASE=0
 [ -d /sys/class/gpio/gpiochip512 ] && GPIO_BASE=512
 

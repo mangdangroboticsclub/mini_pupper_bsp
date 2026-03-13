@@ -3,10 +3,6 @@
 set -e
 
 sudo apt update
-# NOTE: Run 'sudo apt update && sudo apt upgrade' manually before running
-# this script to ensure system packages are up to date. Performing a full
-# upgrade here risks changing the running kernel mid-install, which would
-# invalidate DKMS modules built in the steps below.
 
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -58,14 +54,10 @@ grep -q "mini_pupper" /etc/hosts || echo "127.0.0.1	mini_pupper" | sudo tee -a /
 
 ### upgrade Ubuntu and install required packages
 echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
-# Ubuntu 24.04 (Noble) uses DEB822 format in /etc/apt/sources.list.d/ubuntu.sources
-# Ubuntu 22.04 (Jammy) uses traditional /etc/apt/sources.list
 if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
     sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
 fi
-# mpg123 is the binary called by rc.local / battery_monitor / test.sh;
-#     mpg321 installs a different binary name and must not be used here.
-sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
+sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg123 python3-tk openssh-server alsa-utils
 if [ -f /etc/libao.conf ]; then
     sudo sed -i "s/pulse/alsa/" /etc/libao.conf
 fi
@@ -91,8 +83,6 @@ for dir in ${COMPONENTS[@]}; do
 done
 
 ### Install pip and Python dependencies
-# Ubuntu 24.04 enforces PEP 668 (externally-managed-environment),
-# so we need --break-system-packages for system-wide pip installs.
 PIP_BREAK="--break-system-packages"
 if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     PIP_BREAK=""
@@ -129,8 +119,6 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
-# On Ubuntu 24.04 Noble, rmem0 is already registered in the nvmem subsystem,
-# so the EEPROM provider created from I2C device 3-0050 becomes 3-00501.
 if [ "$UBUNTU_CODENAME" == "noble" ]; then
     sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
@@ -144,7 +132,6 @@ getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
-# Pi 4 udev rule (pinctrl-bcm2711)
 sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
 KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
@@ -170,13 +157,7 @@ sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
 sudo tee /usr/lib/udev/gpio-mini_pupper.sh << 'EOF' > /dev/null
 #!/bin/bash
-# TODO: The sysfs GPIO ABI (/sys/class/gpio/) is formally deprecated in
-# kernel 6.8 and is scheduled for removal in a future kernel release.
-# This script should be migrated to use the libgpiod character device API
-# (lgpio / python3-gpiod) in a future update to avoid breakage on kernel
-# upgrades beyond 6.8.
-
-# Detect GPIO base offset (kernel 6.8+ on Pi uses base 512 instead of 0)
+# Detect GPIO base offset (kernel 6.8+: base 512, older: base 0)
 GPIO_BASE=0
 if [ -d /sys/class/gpio/gpiochip512 ]; then
     GPIO_BASE=512

@@ -2,13 +2,11 @@
 
 set -e
 
-# Remove orphan DKMS entries not part of this BSP
 sudo dkms remove -m rpi-i2s-audio -v 1.0 --all 2>/dev/null || true
 
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# Use inherited UBUNTU_CODENAME if set, otherwise detect
 UBUNTU_CODENAME=${UBUNTU_CODENAME:-$(lsb_release -cs)}
 
 sudo apt-get install -y dkms

@@ -120,9 +120,6 @@ class ST7789(object):
         if width != height and rotation in [90, 270]:
             raise ValueError("Invalid rotation {} for {}x{} resolution".format(rotation, width, height))
 
-        # Open gpiochip0 — the BCM GPIO controller on Pi 4/5.
-        # lgpio uses BCM pin numbers directly via the character device;
-        # it is unaffected by the sysfs base-offset change in kernel 6.8+.
         self._h = lgpio.gpiochip_open(0)
 
         self._spi = spidev.SpiDev(port, cs)
