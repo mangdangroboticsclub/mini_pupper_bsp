@@ -5,14 +5,6 @@ from enum import Enum
 from MangDang.LCD.ST7789 import ST7789
 
 
-def show_image(image):
-
-    # init st7789 device
-
-    # show picture
-    disp.display(image)
-
-
 class BehaviorState(Enum):
     DEACTIVATED = -1
     REST = 0
