@@ -19,12 +19,6 @@ esac
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-### Test battery monitor
-current_voltage=`cat /sys/class/power_supply/max1720x_battery/voltage_now`
-echo "The current voltage is $current_voltage"
-
-check_result "Did it display the current voltage"
-
 ### Test LCD driver
 cd $BASEDIR/Display
 python test.py

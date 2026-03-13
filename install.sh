@@ -91,8 +91,8 @@ if [ "$UBUNTU_CODENAME" == "noble" ]; then
     sudo apt install -y bzip2 zlib1g-dev
 fi
 
-# mpg123 is the binary called by rc.local / battery_monitor / test.sh;
-#     mpg321 installs a different binary name and must not be used here.
+# mpg123 is the binary called by rc.local / test.sh;
+# mpg321 installs a different binary name and must not be used here.
 # Install build tools and Python dependencies first (needed for DKMS and pip installs)
 sudo apt install -y build-essential python3-pip python3-dev
 sudo apt install -y i2c-tools curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
@@ -121,7 +121,6 @@ if [ "$MACHINE" == "x86_64" ]
 then
     COMPONENTS=(System)
 else
-    # FuelGauge removed - battery monitoring not needed
     COMPONENTS=(IO_Configuration System EEPROM PWMController)
 fi
 for dir in ${COMPONENTS[@]}; do
@@ -166,8 +165,6 @@ then
 fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
-# battery_monitor removed - FuelGauge component not installed
-# sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
 ### Patch path to nvram device node
 # On Ubuntu 24.04 Noble, rmem0 and rmem1 are already registered in the nvmem subsystem,
@@ -251,7 +248,6 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ### Fix audio device
 AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
-# FuelGauge/battery_monitor removed - component not installed
 for f in test.sh System/rc.local; do
     if ! grep -q "mpg123 -a" $BASEDIR/$f; then
         sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
