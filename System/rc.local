@@ -18,4 +18,4 @@ fi
 /home/ubuntu/mini_pupper_bsp/System/check-reconfigure.sh
 
 # install script will replace BASEDIR
-mpg123 BASEDIR/Audio/power_on.mp3 &
+mpg123  BASEDIR/Audio/power_on.mp3 &

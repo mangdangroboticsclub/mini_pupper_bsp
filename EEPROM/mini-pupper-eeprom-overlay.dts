@@ -1,0 +1,22 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2711";
+
+	fragment@0 {
+		target = <&i2c3>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			eeprom@50 {
+				compatible = "atmel,24c08";
+				reg = <0x50>;
+				pagesize = <16>;
+				num-addresses = <4>;
+				status = "okay";
+			};
+		};
+	};
+};

@@ -21,6 +21,7 @@
 #include <linux/delay.h>
 #include <linux/pm_runtime.h>
 #include <linux/bitmap.h>
+#include <linux/version.h>
 
 /*
  * Because the PCA9685 has only one prescaler per chip, only the first channel
@@ -371,8 +372,14 @@ static int pca9685_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
 	return ret;
 }
 
+/* API changed in newer kernels: .get_state now returns int */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static int pca9685_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
+			 struct pwm_state *state)
+#else
 static void pca9685_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
 				  struct pwm_state *state)
+				  #endif
 {
 	struct pca9685 *pca = to_pca(chip);
 	unsigned long long duty;
@@ -398,12 +405,20 @@ static void pca9685_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
 		 */
 		state->duty_cycle = 0;
 		state->enabled = false;
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+		return 0;
+	#else
 		return;
+	#endif
 	}
 
 	state->enabled = true;
 	duty = pca9685_pwm_get_duty(pca, pwm->hwpwm);
 	state->duty_cycle = DIV_ROUND_DOWN_ULL(duty * state->period, PCA9685_COUNTER_RANGE);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	return 0;
+#endif
 }
 
 static int pca9685_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
@@ -443,7 +458,9 @@ static const struct pwm_ops pca9685_pwm_ops = {
 	.get_state = pca9685_pwm_get_state,
 	.request = pca9685_pwm_request,
 	.free = pca9685_pwm_free,
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)
 	.owner = THIS_MODULE,
+	#endif
 };
 
 static const struct regmap_config pca9685_regmap_i2c_config = {
@@ -453,8 +470,12 @@ static const struct regmap_config pca9685_regmap_i2c_config = {
 	.cache_type = REGCACHE_NONE,
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static int pca9685_pwm_probe(struct i2c_client *client)
+#else
 static int pca9685_pwm_probe(struct i2c_client *client,
 				const struct i2c_device_id *id)
+#endif
 {
 	struct pca9685 *pca;
 	unsigned int reg;
@@ -532,15 +553,15 @@ static int pca9685_pwm_probe(struct i2c_client *client,
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static void pca9685_pwm_remove(struct i2c_client *client)
+#else
 static int pca9685_pwm_remove(struct i2c_client *client)
+#endif
 {
 	struct pca9685 *pca = i2c_get_clientdata(client);
-	int ret;
 
-	//ret = pwmchip_remove(&pca->chip);
 	pwmchip_remove(&pca->chip);
-	//if (ret)
-	//	return ret;
 
 	if (!pm_runtime_enabled(&client->dev)) {
 		/* Put chip in sleep state if runtime PM is disabled */
@@ -549,7 +570,9 @@ static int pca9685_pwm_remove(struct i2c_client *client)
 
 	pm_runtime_disable(&client->dev);
 
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0)
 	return 0;
+	#endif
 }
 
 static int __maybe_unused pca9685_pwm_runtime_suspend(struct device *dev)
