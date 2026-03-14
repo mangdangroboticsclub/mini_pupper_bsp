@@ -1,6 +1,18 @@
+import os
 import pickle
 
-ServoCalibrationFilePath = '/sys/bus/nvmem/devices/3-00500/nvmem'
+
+def _get_nvmem_path():
+    for path in [
+        '/sys/bus/nvmem/devices/3-00501/nvmem',  # Noble
+        '/sys/bus/nvmem/devices/3-00500/nvmem',  # Jammy
+    ]:
+        if os.path.exists(path):
+            return path
+    return '/sys/bus/nvmem/devices/3-00500/nvmem'
+
+
+ServoCalibrationFilePath = _get_nvmem_path()
 
 
 def write(data):
