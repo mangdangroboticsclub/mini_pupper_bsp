@@ -18,11 +18,11 @@ then
     echo CLOUD_INIT_CLONE=\"$(grep clone /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
     echo CLOUD_INIT_SCRIPT=\"$(grep setup_out /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
 else
-    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh 2>/dev/null || echo 'none')\" >> ~/mini-pupper-release
+    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh)\" >> ~/mini-pupper-release
 fi
-echo BSP_VERSION=\"$(cd $BASEDIR; ./get-version.sh)\" >> ~/mini-pupper-release
-cd $BASEDIR
-TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1 2>/dev/null || true)
+echo BSP_VERSION=\"$(cd ~/mini_pupper_bsp; ./get-version.sh)\" >> ~/mini-pupper-release
+cd ~/mini_pupper_bsp
+TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1)
 TAG=$(git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 BSP_VERSION=$(./get-version.sh)
 if [ "v$BSP_VERSION" == "$TAG" ]
