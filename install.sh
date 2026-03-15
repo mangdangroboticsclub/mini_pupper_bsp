@@ -5,10 +5,6 @@ set -e
 ### Get directory where this script is installed
 BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-### Detect Ubuntu version
-UBUNTU_CODENAME=$(lsb_release -cs)
-echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
-
 ### Write release file
 echo BUILD_DATE=\"$(date)\" > ~/mini-pupper-release
 echo HARDWARE=\"$(python3 $BASEDIR/Python_Module/MangDang/mini_pupper/capabilities.py)\" >> ~/mini-pupper-release
@@ -18,11 +14,11 @@ then
     echo CLOUD_INIT_CLONE=\"$(grep clone /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
     echo CLOUD_INIT_SCRIPT=\"$(grep setup_out /boot/firmware/user-data | awk -F'"' '{print $2}')\" >> ~/mini-pupper-release
 else
-    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh 2>/dev/null || echo 'none')\" >> ~/mini-pupper-release
+    echo BUILD_SCRIPT=\"$(cd ~; ls *build.sh)\" >> ~/mini-pupper-release
 fi
-echo BSP_VERSION=\"$(cd $BASEDIR; ./get-version.sh)\" >> ~/mini-pupper-release
-cd $BASEDIR
-TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1 2>/dev/null || true)
+echo BSP_VERSION=\"$(cd ~/mini_pupper_bsp; ./get-version.sh)\" >> ~/mini-pupper-release
+cd ~/mini_pupper_bsp
+TAG_COMMIT=$(git rev-list --abbrev-commit --tags --max-count=1)
 TAG=$(git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 BSP_VERSION=$(./get-version.sh)
 if [ "v$BSP_VERSION" == "$TAG" ]
@@ -60,39 +56,57 @@ fi
 
 # Fix package dependency issues for Ubuntu 24.04 (Noble)
 # Some systems may have security-updated versions that conflict with repository versions
+### Detect Ubuntu version
+UBUNTU_CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
+
 if [ "$UBUNTU_CODENAME" == "noble" ]; then
-    echo "Fixing potential package version conflicts for Ubuntu 24.04..."
-    sudo apt clean
-    sudo apt --fix-broken install -y || true
-    
-    # Check if libbz2-1.0 and zlib1g need downgrade to match repository versions
-    # This prevents "unmet dependencies" errors when installing build-essential
-    LIBBZ2_INSTALLED=$(dpkg -l libbz2-1.0 2>/dev/null | grep "^ii" | awk '{print $3}' || echo "")
-    ZLIB1G_INSTALLED=$(dpkg -l zlib1g 2>/dev/null | grep "^ii" | awk '{print $3}' || echo "")
-    
-    if [ -n "$LIBBZ2_INSTALLED" ] && [ "$LIBBZ2_INSTALLED" != "1.0.8-5.1" ]; then
-        echo "Downgrading libbz2-1.0 to repository version..."
-        sudo apt install --allow-downgrades -y libbz2-1.0=1.0.8-5.1 || true
+    echo "Optimizing package versions for Ubuntu 24.04 (Noble)..."
+
+    # 1. Clean and Fix in one go
+    sudo apt-get clean
+    sudo apt-get install -fy || true
+
+    # 2. Use a helper function to check and downgrade only if necessary
+    # 'dpkg-query' is faster and more reliable than 'dpkg -l | grep'
+    check_and_fix() {
+        local pkg=$1
+        local target=$2
+        local current=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null || echo "")
+
+        if [ -n "$current" ] && [ "$current" != "$target" ]; then
+            echo "Adjusting $pkg: $current -> $target"
+            sudo apt-get install --allow-downgrades -y "$pkg=$target" || return 1
+        fi
+    }
+
+    # 3. Apply fixes for the specific libraries
+    # Define target versions as variables for easy maintenance
+    BZ2_VER="1.0.8-5.1"
+    ZLIB_VER="1:1.3.dfsg-3.1ubuntu2"
+    check_and_fix "libbz2-1.0" "$BZ2_VER"
+    check_and_fix "zlib1g" "$ZLIB_VER"
+
+    # 4. Final installation attempt
+    echo "Installing build dependencies..."
+    if ! sudo apt-get install -y bzip2="$BZ2_VER" zlib1g-dev="$ZLIB_VER"; then
+        echo "Fallback: Installing latest available versions..."
+        sudo apt-get install -y bzip2 zlib1g-dev
     fi
-    
-    if [ -n "$ZLIB1G_INSTALLED" ] && [ "$ZLIB1G_INSTALLED" != "1:1.3.dfsg-3.1ubuntu2" ]; then
-        echo "Downgrading zlib1g to repository version..."
-        sudo apt install --allow-downgrades -y zlib1g=1:1.3.dfsg-3.1ubuntu2 || true
-    fi
-    
-    # Install bzip2 and zlib1g-dev with specific versions to avoid conflicts
-    sudo apt install -y bzip2=1.0.8-5.1 zlib1g-dev=1:1.3.dfsg-3.1ubuntu2 || \
-    sudo apt install -y bzip2 zlib1g-dev
 fi
 
-# mpg123 is the binary called by rc.local / test.sh;
-# mpg321 installs a different binary name and must not be used here.
 # Install build tools and Python dependencies first (needed for DKMS and pip installs)
-sudo apt install -y build-essential python3-pip python3-dev
-sudo apt install -y i2c-tools curl python-is-python3 mpg123 python3-tk openssh-server screen alsa-utils libportaudio2 libsndfile1
-if [ -f /etc/libao.conf ]; then
-    sudo sed -i "s/pulse/alsa/" /etc/libao.conf
+sudo apt install -y i2c-tools curl python-is-python3 mpg123 python3-tk openssh-server
+sudo apt install -y build-essential python3-pip screen alsa-utils libportaudio2 libsndfile1
+
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    echo "Ubuntu24"
+else
+    [ ! -f "/etc/libao.conf" ] && sudo apt update && sudo apt install -y libao-common libao4
+    [ -f "/etc/libao.conf" ] && sudo sed -i "s/pulse/alsa/" /etc/libao.conf
+    #sudo sed -i "s/pulse/alsa/" /etc/libao.conf
 fi
+
 if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
 fi
@@ -131,14 +145,18 @@ if [ "$UBUNTU_CODENAME" == "noble" ]; then
 fi
 
 cd /tmp
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
 # Skip pip upgrade to avoid conflicts with system-managed pip
-# wget https://bootstrap.pypa.io/get-pip.py
-# sudo python get-pip.py $PIP_BREAK || true
-sudo pip3 install $PIP_BREAK setuptools lgpio
+    sudo pip3 install $PIP_BREAK setuptools lgpio
+else
+    wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+    sudo python get-pip.py
+    sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
+fi
 
 ### Install Python module
-# python3-dev already installed above
-sudo git config --global --add safe.directory $BASEDIR
+sudo apt install -y python3-dev
+sudo git config --global --add safe.directory $BASEDIR # temporary fix https://bugs.launchpad.net/devstack/+bug/1968798
 if [ "$MACHINE" == "x86_64" ]
 then
     PYTHONMODLE=mock_api
@@ -149,7 +167,7 @@ if [ "$IS_RELEASE" == "YES" ]
 then
     sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 else
-    sudo pip3 install $PIP_BREAK $BASEDIR/$PYTHONMODLE
+    sudo pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 fi
 
 ### Do the rest of the installation only on a physical mini pupper
@@ -163,7 +181,9 @@ sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
 ### Patch path to nvram device node
 # On Ubuntu 24.04 Noble, rmem0 and rmem1 are already registered in the nvmem subsystem,
 # so the EEPROM provider created from I2C device 3-0050 becomes 3-00502.
-if [ "$UBUNTU_CODENAME" == "noble" ]; then
+if [ "$UBUNTU_CODENAME" == "jammy" ]; then
+    sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
+elif [ "$UBUNTU_CODENAME" == "noble" ]; then
     sudo sed -i "s/3-00500/3-00502/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
@@ -232,14 +252,3 @@ EOF
 sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
 sudo udevadm control --reload-rules && sudo udevadm trigger
-
-### Fix audio device
-AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
-for f in test.sh System/rc.local; do
-    if ! grep -q "mpg123 -a" $BASEDIR/$f; then
-        sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
-    fi
-done
-if ! grep -q "mpg123 -a" /etc/rc.local; then
-    sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
-fi
