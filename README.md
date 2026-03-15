@@ -1,6 +1,6 @@
 # Mini Pupper - Generative AI, ROS, OpenCV, Open-source, Pi Robot Dog
 
-This repository is the BSP(board support package) for Mini Pupper version 1.
+This repository is the BSP(board support package) for Mini Pupper version 1 based on Ubuntu24.04, Ubuntu22.04.
 
 [MangDang](https://mangdang.store/) Online channel: [Discord](https://discord.gg/xJdt3dHBVw), [FaceBook](https://www.facebook.com/groups/716473723088464), [YouTube](https://www.youtube.com/channel/UCqHWYGXmnoO7VWHmENje3ug/featured), [Twitter](https://twitter.com/LeggedRobot)
 
@@ -47,7 +47,7 @@ Main changes compared to Mini Pupper original basic Ubuntu version repository:
 ### Flash Ubuntu preinstalled image to the SD card. 
 
 
-* Download `ubuntu-22.04.4-preinstalled-server-arm64+raspi.img.xz` from the official website https://ubuntu.com/download/raspberry-pi or  [our Google drive link](https://drive.google.com/drive/folders/1kIlAAL_uM-_98u1JI_6yRF8cNsiFSFGj?usp=sharing)
+* Download Ubuntu22.04 or Ubuntu24.04 from the official website https://ubuntu.com/download/raspberry-pi or  [our Google drive link](https://drive.google.com/drive/folders/1kIlAAL_uM-_98u1JI_6yRF8cNsiFSFGj?usp=sharing)
 
 
 ### Boot Raspberry Pi 
@@ -78,11 +78,6 @@ Manual installation is an advanced method.
 ```sh
 sudo apt update
 sudo apt upgrade
-reboot
-```
-
-```
-sudo apt install -y git python3-pip
 reboot
 ```
 
