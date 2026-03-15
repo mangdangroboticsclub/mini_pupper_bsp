@@ -48,12 +48,66 @@ grep -q "mini_pupper" /etc/hosts || echo "127.0.0.1	mini_pupper" | sudo tee -a /
 
 ### upgrade Ubuntu and install required packages
 echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
-sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
-sudo apt update
-sudo apt -y upgrade
-sudo apt install -y i2c-tools dpkg-dev curl python-is-python3 mpg321 python3-tk openssh-server
-sudo sed -i "s/pulse/alsa/" /etc/libao.conf
-if [ $(lsb_release -cs) == "jammy" ]; then
+# Ubuntu 24.04 (Noble) uses DEB822 format in /etc/apt/sources.list.d/ubuntu.sources
+# Ubuntu 22.04 (Jammy) uses traditional /etc/apt/sources.list
+if [ -f /etc/apt/sources.list ] && [ -s /etc/apt/sources.list ]; then
+    sudo sed -i "s/# deb-src/deb-src/g" /etc/apt/sources.list
+fi
+
+# Fix package dependency issues for Ubuntu 24.04 (Noble)
+# Some systems may have security-updated versions that conflict with repository versions
+### Detect Ubuntu version
+UBUNTU_CODENAME=$(lsb_release -cs)
+echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
+
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    echo "Optimizing package versions for Ubuntu 24.04 (Noble)..."
+
+    # 1. Clean and Fix in one go
+    sudo apt-get clean
+    sudo apt-get install -fy || true
+
+    # 2. Use a helper function to check and downgrade only if necessary
+    # 'dpkg-query' is faster and more reliable than 'dpkg -l | grep'
+    check_and_fix() {
+        local pkg=$1
+        local target=$2
+        local current=$(dpkg-query -W -f='${Version}' "$pkg" 2>/dev/null || echo "")
+
+        if [ -n "$current" ] && [ "$current" != "$target" ]; then
+            echo "Adjusting $pkg: $current -> $target"
+            sudo apt-get install --allow-downgrades -y "$pkg=$target" || return 1
+        fi
+    }
+
+    # 3. Apply fixes for the specific libraries
+    # Define target versions as variables for easy maintenance
+    BZ2_VER="1.0.8-5.1"
+    ZLIB_VER="1:1.3.dfsg-3.1ubuntu2"
+    check_and_fix "libbz2-1.0" "$BZ2_VER"
+    check_and_fix "zlib1g" "$ZLIB_VER"
+
+    # 4. Final installation attempt
+    echo "Installing build dependencies..."
+    if ! sudo apt-get install -y bzip2="$BZ2_VER" zlib1g-dev="$ZLIB_VER"; then
+        echo "Fallback: Installing latest available versions..."
+        sudo apt-get install -y bzip2 zlib1g-dev
+    fi
+fi
+
+# Install build tools and Python dependencies first (needed for DKMS and pip installs)
+sudo apt install -y i2c-tools curl python-is-python3 mpg123 python3-tk openssh-server
+sudo apt install -y build-essential python3-pip screen alsa-utils libportaudio2 libsndfile1
+
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    echo "Ubuntu24"
+else
+    [ ! -f "/etc/libao.conf" ] && sudo apt update && sudo apt install -y libao-common libao4
+    [ -f "/etc/libao.conf" ] && sudo sed -i "s/pulse/alsa/" /etc/libao.conf
+    #sudo sed -i "s/pulse/alsa/" /etc/libao.conf
+fi
+
+if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     sudo sed -i "s/cards.pcm.front/cards.pcm.default/" /usr/share/alsa/alsa.conf
 fi
 
@@ -61,24 +115,44 @@ fi
 sudo rm -rf /var/lib/mini_pupper_bsp
 sudo cp -r $BASEDIR/Display /var/lib/mini_pupper_bsp
 
+### Install kernel headers for DKMS module compilation
+KERNEL_VERSION=$(uname -r)
+sudo apt install -y linux-headers-${KERNEL_VERSION} || echo "Warning: Could not install exact kernel headers, trying generic..."
+if ! dpkg -l | grep -q "linux-headers-${KERNEL_VERSION}"; then
+    # Try to install generic raspi headers if exact version not available
+    sudo apt install -y linux-headers-raspi || true
+fi
+
 ### Install system components
 $BASEDIR/prepare_dkms.sh
 if [ "$MACHINE" == "x86_64" ]
 then
     COMPONENTS=(System)
 else
-    COMPONENTS=(IO_Configuration FuelGauge System EEPROM PWMController)
+    COMPONENTS=(IO_Configuration System EEPROM PWMController)
 fi
 for dir in ${COMPONENTS[@]}; do
     cd $BASEDIR/$dir
     ./install.sh
 done
 
-### Install pip
+### Install pip and Python dependencies
+# Ubuntu 24.04 enforces PEP 668 (externally-managed-environment),
+# so we need --break-system-packages for system-wide pip installs.
+PIP_BREAK=""
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+    PIP_BREAK="--break-system-packages"
+fi
+
 cd /tmp
-wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
+if [ "$UBUNTU_CODENAME" == "noble" ]; then
+# Skip pip upgrade to avoid conflicts with system-managed pip
+    sudo pip3 install $PIP_BREAK setuptools lgpio
+else
+    wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+    sudo python get-pip.py
+    sudo pip install setuptools==58.2.0 # temporary fix https://github.com/mangdangroboticsclub/mini_pupper_ros/pull/45#discussion_r1104759104
+fi
 
 ### Install Python module
 sudo apt install -y python3-dev
@@ -91,23 +165,26 @@ else
 fi
 if [ "$IS_RELEASE" == "YES" ]
 then
-    sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $BASEDIR/$PYTHONMODLE
+    sudo PBR_VERSION=$(cd $BASEDIR; ./get-version.sh) pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 else
-    sudo pip install $BASEDIR/$PYTHONMODLE
+    sudo pip install $PIP_BREAK $BASEDIR/$PYTHONMODLE
 fi
 
-### Do the rest of the istallation only on a physical mini pupper
+### Do the rest of the installation only on a physical mini pupper
 if [ "$MACHINE" == "x86_64" ]
 then
     exit 
 fi
 
 sudo sed -i "s|BASEDIR|$BASEDIR|" /etc/rc.local
-sudo sed -i "s|BASEDIR|$BASEDIR|" /usr/bin/battery_monitor
 
-### Patch path to nvram for Ubuntu 22.04
-if [ $(lsb_release -cs) == "jammy" ]; then
+### Patch path to nvram device node
+# On Ubuntu 24.04 Noble, rmem0 and rmem1 are already registered in the nvmem subsystem,
+# so the EEPROM provider created from I2C device 3-0050 becomes 3-00502.
+if [ "$UBUNTU_CODENAME" == "jammy" ]; then
     sudo sed -i "s/3-00500/3-00501/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
+elif [ "$UBUNTU_CODENAME" == "noble" ]; then
+    sudo sed -i "s/3-00500/3-00502/" /usr/local/lib/python3.*/dist-packages/MangDang/mini_pupper/nvram.py
 fi
 
 ### Make pwm sysfs and nvmem work for non-root users
@@ -119,13 +196,16 @@ getent group spi || sudo groupadd spi && sudo gpasswd -a $(whoami) spi
 sudo tee /etc/udev/rules.d/99-mini_pupper-pwm.rules << EOF > /dev/null
 KERNEL=="pwmchip0", SUBSYSTEM=="pwm", RUN+="/usr/lib/udev/pwm-mini_pupper.sh"
 EOF
+# Pi 4 udev rule (pinctrl-bcm2711)
+# Support both old kernel (gpiochip0) and kernel 6.8+ (gpiochip512)
 sudo tee /etc/udev/rules.d/99-mini_pupper-gpio.rules << EOF > /dev/null
-KERNELS=="gpiochip0", SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
+SUBSYSTEM=="gpio", ACTION=="add", ATTR{label}=="pinctrl-bcm2711", RUN+="/usr/lib/udev/gpio-mini_pupper.sh"
 KERNEL=="gpiomem", OWNER="root", GROUP="gpio", MODE="0660"
 EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-nvmem.rules << EOF > /dev/null
 KERNEL=="3-00500", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00500/nvmem"
 KERNEL=="3-00501", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00501/nvmem"
+KERNEL=="3-00502", SUBSYSTEM=="nvmem", RUN+="/bin/chmod 666 /sys/bus/nvmem/devices/3-00502/nvmem"
 EOF
 sudo tee /etc/udev/rules.d/99-mini_pupper-spi.rules << EOF > /dev/null
 KERNEL=="spidev0.0", OWNER="root", GROUP="spi", MODE="0660"
@@ -142,36 +222,33 @@ done
 EOF
 sudo chmod +x /usr/lib/udev/pwm-mini_pupper.sh
 
-sudo tee /usr/lib/udev/gpio-mini_pupper.sh << EOF > /dev/null
+sudo tee /usr/lib/udev/gpio-mini_pupper.sh << 'EOF' > /dev/null
 #!/bin/bash
-# Board power
-echo 21 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio21/direction
-chmod 666 /sys/class/gpio/gpio21/value
-echo 1 > /sys/class/gpio/gpio21/value
+GPIO_BASE=0
+if [ -d /sys/class/gpio/gpiochip512 ]; then
+    GPIO_BASE=512
+fi
 
-echo 25 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio25/direction
-chmod 666 /sys/class/gpio/gpio25/value
-echo 1 > /sys/class/gpio/gpio25/value
+# Board power
+PIN=$((GPIO_BASE + 21))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
+
+PIN=$((GPIO_BASE + 25))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
 
 # LCD power
-echo 26 > /sys/class/gpio/export
-echo out > /sys/class/gpio/gpio26/direction
-chmod 666 /sys/class/gpio/gpio26/value
-echo 1 > /sys/class/gpio/gpio26/value
+PIN=$((GPIO_BASE + 26))
+echo $PIN > /sys/class/gpio/export 2>/dev/null
+echo out > /sys/class/gpio/gpio${PIN}/direction
+chmod 666 /sys/class/gpio/gpio${PIN}/value
+echo 1 > /sys/class/gpio/gpio${PIN}/value
 EOF
 sudo chmod +x /usr/lib/udev/gpio-mini_pupper.sh
 
 sudo udevadm control --reload-rules && sudo udevadm trigger
-
-### Fix audio device
-AUDIO_DEVICE=$(cat /proc/asound/pcm | grep Headphones | sed -E "s/^([0-9].)-([0-9].):.*/hw:\1,\2/g")
-for f in test.sh FuelGauge/battery_monitor System/rc.local; do
-    if ! grep -q "mpg123 -a" $BASEDIR/$f; then
-        sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" $BASEDIR/$f
-    fi
-done
-if ! grep -q "mpg123 -a" /etc/rc.local; then
-    sudo sed -i -e "s/mpg123/mpg123 -a ${AUDIO_DEVICE:-hw:0,1}/g" /etc/rc.local
-fi
